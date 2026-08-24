@@ -1,8 +1,6 @@
 import json
-from pyexpat.errors import messages
 import urllib.request
 import urllib.error
-from xml.parsers.expat import model
 from memory import load_knowledge
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
