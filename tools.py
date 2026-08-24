@@ -26,7 +26,11 @@ def search_and_replace(vfs, filepath, old_code, new_code):
         return content
         
     if old_code not in content:
-        return "Error: `old_code` block not found exactly as written. Ensure indentation matches."
+        return (
+            "Error: `old_code` block not found exactly as written. "
+            "Ensure indentation matches. Prefer `read_file` then full "
+            "`write_file` rewrite instead of retrying `search_and_replace`."
+        )
         
     new_content = content.replace(old_code, new_code)
     return vfs.write_file(filepath, new_content)

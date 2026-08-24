@@ -90,7 +90,23 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
             print(f"[OBSERVATION]\n{safe_observation}\n")
             
             messages.append({"role": "assistant", "content": json.dumps(response)})
-            messages.append({"role": "user", "content": f"Observation from {tool_name}: {safe_observation}"})
+            observation_msg = f"Observation from {tool_name}: {safe_observation}"
+
+            # Nudge the model out of common local-LLM failure loops.
+            if "old_code` block not found" in safe_observation:
+                print("[HARNESS INTERVENTION] search_and_replace miss — steer toward read+write.")
+                observation_msg += (
+                    "\n\n[SYSTEM NOTE: Stop retrying search_and_replace. "
+                    "Call read_file on that path, then write_file with the full corrected file.]"
+                )
+            elif "[SIMULATION FAILED]" in safe_observation:
+                print("[HARNESS INTERVENTION] Failed simulation — steer toward a fix cycle.")
+                observation_msg += (
+                    "\n\n[SYSTEM NOTE: Tests failed. Read the failing file(s), fix the "
+                    "implementation or missing imports with write_file, then re-run pytest.]"
+                )
+
+            messages.append({"role": "user", "content": observation_msg})
             
         else:
             print("[HARNESS INTERVENTION] No tool call specified while in progress.")
