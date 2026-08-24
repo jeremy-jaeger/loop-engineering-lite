@@ -1,0 +1,30 @@
+name: Feature request
+description: A change that makes the runtime more useful or more honest
+title: "[feat] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is painful or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Keep it small. Prefer verification over slogans.
+    validations:
+      required: true
+  - type: dropdown
+    id: pillar
+    attributes:
+      label: Which pillar
+      options:
+        - World model / VFS
+        - Harness loop
+        - Tools / safety
+        - Memory / trajectories
+        - Docs / examples
+        - Other

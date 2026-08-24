@@ -70,13 +70,6 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
             # 4. CONTINUOUS LEARNING TRIGGER
             reflect_on_trace(messages, initial_prompt, model="qwen3.5:0.8b")
             return final_ans
-            
-            # 2. VERIFIED COMMIT TO REALITY
-            vfs.commit_to_reality()
-            
-            # 3. CONTINUOUS LEARNING TRIGGER
-            reflect_on_trace(messages, initial_prompt, model="qwen3.5:0.8b")
-            return final_ans
         # ------------------------------
             
         # --- TOOL DISPATCH ---

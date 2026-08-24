@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: Loop Engineering Lite
+message: If you use this software, please cite it as below.
+type: software
+authors:
+  - family-names: Jaeger
+    given-names: Jeremy
+    email: 207845088+jeremy-jaeger@users.noreply.github.com
+repository-code: https://github.com/jeremy-jaeger/loop-engineering-lite
+license: MIT
+version: 0.1.0
+date-released: "2026-08-24"
+abstract: >
+  A lightweight, local agent harness that sandboxes file and shell actions
+  in a virtual file system, commits only verified simulations, and exports
+  trajectories plus heuristics for later improvement.

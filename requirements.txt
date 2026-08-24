@@ -1,0 +1,3 @@
+# Runtime dependencies: none. Python stdlib + a local Ollama daemon.
+#
+#   pip install -e ".[dev]"   # pytest for unit tests

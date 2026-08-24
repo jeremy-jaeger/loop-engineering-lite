@@ -1,0 +1,34 @@
+name: Bug report
+description: Something the harness did (or failed to do) incorrectly
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Include a prompt and the iteration log if you can — this project lives and dies on traces.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      placeholder: Expected vs actual.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Exact command, model tag, OS, Python version.
+      placeholder: python3 main.py "..."
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Ollama model
+      placeholder: qwen3.5:0.8b
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant log excerpt
+      render: text
