@@ -44,11 +44,13 @@ We keep those two documents separate on purpose.
 
 ## See it
 
+<!-- pulse:start -->
 <p align="center">
   <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
 </p>
 
-<p align="center"><sub>The field above is not a static illustration. A scheduled Action calls the GitHub API and <a href="scripts/generate_pulse.py">redraws the SVG</a> from this repo’s own stars, forks, watchers, and contributors. Meta on purpose — see <a href="docs/pulse.md">docs/pulse.md</a>.</sub></p>
+<p align="center"><sub>CI last redrew this README 2026-08-24 07:39 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 3 open issues/PRs, 1 listed contributors (<code>jeremy-jaeger</code>). History just started — this is sample zero of the sparkline. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
+<!-- pulse:end -->
 
 <p align="center">
   <img src="docs/assets/terminal-demo.svg" alt="Example terminal session of a verified TDD loop" width="920">
