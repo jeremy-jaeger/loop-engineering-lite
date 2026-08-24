@@ -17,6 +17,8 @@ def read_file(vfs, filepath):
 
 def _normalize_written_content(content):
     """Repair common local-LLM write_file artifacts."""
+    import re as _re
+
     if not isinstance(content, str):
         content = "" if content is None else str(content)
     # Double-escaped newlines: entire file arrives as one physical line with \n.
@@ -28,32 +30,9 @@ def _normalize_written_content(content):
             .replace('\\"', '"')
         )
     # Trailing JSON-brace leakage after a complete statement (e.g. "...'-')}}}").
-    stripped = content.rstrip()
-    if stripped.endswith("}") and any(ch in stripped[-8:] for ch in "'\")}]"):
-        while stripped.endswith("}"):
-            stripped = stripped[:-1].rstrip()
-            if stripped.endswith(("'", '"', ")", "]")):
-                # Keep stripping only while more braces remain after a closer.
-                # Stop once we have consumed the junk run and landed on code.
-                # If still more '}' immediately after another '}', continue outer while.
-                pass
-            else:
-                # Removed one brace too many into real code — put it back.
-                stripped = stripped + "}"
-                break
-            # After landing on a closer, peel any remaining trailing braces.
-            while stripped.endswith(("'", '"', ")", "]")):
-                # peek: if next peel isn't needed, exit both loops via flag
-                break
-            # Continue only if more braces remain
-            if not stripped.endswith("}") and content.rstrip().endswith("}"):
-                # We have removed all trailing braces down to a closer.
-                break
-        # Simpler second pass: strip all trailing } that follow a closer.
-        import re as _re
-        stripped = _re.sub(r'''(['")])\}+\s*$''', r"\1", stripped)
-    if stripped != content.rstrip():
-        content = stripped + ("\n" if content.endswith("\n") else "")
+    cleaned = _re.sub(r'''(['")])\}+\s*$''', r"\1", content.rstrip())
+    if cleaned != content.rstrip():
+        content = cleaned + ("\n" if content.endswith("\n") else "")
     return content
 
 

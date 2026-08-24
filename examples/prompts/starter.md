@@ -2,19 +2,18 @@
 
 Run from an **empty working directory**. Quote the whole task.
 
-## Real-world (CMS slug)
+## Real-world (checkout money)
 
 ```text
-Use TDD to write slugify(text) in slugify.py for a CMS URL helper.
-Rules: lowercase; spaces and underscores become hyphens; keep only
-letters, digits, and hyphens; collapse repeated hyphens; strip leading
-and trailing hyphens. Empty or punctuation-only input returns ''.
-Write tests in test_slugify.py for: 'Hello, World!' -> 'hello-world',
-'  API_v2 Release  ' -> 'api-v2-release', '---' -> ''.
-Use python3 -m pytest. Do not mark complete until tests pass.
+Use TDD to write dollars_to_cents(text) in money.py for a checkout form.
+Accept '$12.34', '12.34', and '10'. Return int cents (1234, 1234, 1000).
+Raise ValueError for negatives, empty strings, or malformed input.
+Write tests in test_money.py using from money import dollars_to_cents
+and def test_... functions. Use python3 -m pytest -q.
+Do not mark complete until tests pass.
 ```
 
-Full write-up: [real_world/cms_slugify.md](../real_world/cms_slugify.md).
+Full write-up: [real_world/checkout_money.md](../real_world/checkout_money.md).
 
 ## Tiny TDD (best fit)
 
