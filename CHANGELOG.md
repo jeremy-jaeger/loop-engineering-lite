@@ -5,6 +5,21 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- CLI via `argparse`: `--model`, `--max-iters`, `--llm-api-base`
+- README rewrite: verify-before-commit headline, before/after table, Why Loop, examples gallery
+- `docs/ROADMAP.md`, `docs/COMPARISONS.md`; stronger `SECURITY.md` isolation table
+- `examples/benchmarks.py` (live scorecard + `--dry-run`)
+- CI coverage report on Python 3.12; richer bug report template fields
+
+### Changed
+
+- Getting-started flow leads with editable install + throwaway-dir warning
+- Self-improvement docs spell out the four-step knowledge/JSONL flow
+
 ## [0.1.0] — 2026-08-24
 
 ### Added
@@ -21,6 +36,7 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 ### Known limits
 
-- Live inference requires a local Ollama daemon
+- Live inference requires a local Ollama daemon (or compatible `--llm-api-base`)
 - `commit_to_reality` writes the full VFS snapshot back to the working directory
 - Fine-tuning (MLX / LoRA) is a documented pipeline, not a bundled trainer
+- Tempdir isolation is not a container — see SECURITY.md

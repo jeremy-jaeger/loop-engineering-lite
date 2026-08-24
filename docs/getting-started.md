@@ -3,34 +3,42 @@
 ## Requirements
 
 - Python 3.9+
-- [Ollama](https://ollama.com) running locally (`http://localhost:11434`)
-- A chat model tag. The default in code is `qwen3.5:0.8b` (small, swarm-friendly).
-  Any Ollama chat model that honors JSON `format` will work if you change the
-  `model=` argument.
+- [Ollama](https://ollama.com) installed and running (`http://localhost:11434`)
+- A chat model tag. Default: `qwen3.5:0.8b` (small, swarm-friendly).
+  Any Ollama chat model that honors JSON `format` works via `--model`.
 
-No pip packages are required to **run** the agent. `pytest` is only for unit tests.
+No pip packages are required to **run** the agent. `pytest` is only for unit tests / the editable install’s `dev` extra.
 
-## Install
+## Install (recommended)
 
 ```bash
+# 1. Install Ollama → https://ollama.com
+# 2. Pull a model
+ollama pull qwen3.5:0.8b
+
+# 3. Clone & editable install (exposes `agent-loop`)
 git clone https://github.com/jeremy-jaeger/loop-engineering-lite.git
 cd loop-engineering-lite
-ollama pull qwen3.5:0.8b
-```
-
-Optional editable install (exposes the `agent-loop` console script):
-
-```bash
 python3 -m pip install -e ".[dev]"
+
+# 4. Harness tests — no Ollama, no GPU, no network
+python3 -m pytest -q
+python3 examples/offline_vfs_demo.py
 ```
 
 ## First run (safe)
 
-`commit_to_reality` writes every file in the VFS back into the process working
-directory. Do not discover that the hard way on this repo.
+> **Warning:** `commit_to_reality` writes every file in the VFS into the
+> process working directory. Start in a throwaway folder.
 
 ```bash
 mkdir -p /tmp/lel-demo && cd /tmp/lel-demo
+agent-loop "Use TDD to write is_palindrome(s) in str_utils.py. Tests for racecar, hello, and empty string."
+```
+
+Equivalent without the console script:
+
+```bash
 python3 /path/to/loop-engineering-lite/main.py \
   "Use TDD to write is_palindrome(s) in str_utils.py. Tests for racecar, hello, and empty string."
 ```
@@ -39,45 +47,32 @@ You should see iteration logs, a `[SIMULATION VERIFIED SUCCESS]` or failure
 from pytest, then either a commit + optional reflection, or an abort at
 `max_iterations`.
 
-## CLI
+### Useful flags
 
 ```bash
-python3 main.py "Build a Temperature class in temp.py with Celsius in, Fahrenheit out."
-# or, after pip install -e .
-agent-loop "List files, then summarize what this folder contains."
+agent-loop --model qwen2:0.5b --max-iters 15 "…"
+agent-loop --llm-api-base http://localhost:11434 "…"
 ```
 
-Arguments are joined into one prompt. Default cap is 10 iterations
-(`run_agent_loop(..., max_iterations=10)`).
+`--llm-api-base` defaults to Ollama’s origin. The client calls `{base}/api/chat`.
 
-## Without a model
+## Multi-file tasks
 
-The VFS and tools are ordinary Python. Unit tests cover them:
+The VFS stores files as path-string keys (`models.py`, `pkg/util.py`). Nested
+directories are created when simulating or committing. Agents can orchestrate
+across multiple files in one prompt:
 
 ```bash
-cd loop-engineering-lite
-python3 -m pip install -e ".[dev]"
-python3 -m pytest -q
+agent-loop "Build a todo CLI: main.py (entry), models.py (data), commands.py (actions). Tests must pass."
 ```
 
-There is also a no-Ollama walkthrough in
-[examples/offline_vfs_demo.py](../examples/offline_vfs_demo.py).
+Limitation: `list_files` returns a **flat** key list (no per-directory filter yet).
+See [ROADMAP.md](ROADMAP.md).
 
-## Batch trajectories
+## Next reading
 
-From the **repository root**:
-
-```bash
-chmod +x scripts/generate_dataset.sh
-./scripts/generate_dataset.sh
-```
-
-Successful `dataset.jsonl` files are appended to `data/train.jsonl`. That
-script runs live models and **will write files into the current directory**.
-Use a throwaway workspace if you do not want artifacts in git.
-
-## Environment notes
-
-The system prompt currently tells the model it is on **macOS** and to use
-`python3` / `python3 -m pytest`. On Linux that still works. If you need
-Windows, you will want to relax that grounding string in `llm_client.py`.
+- [SECURITY.md](../SECURITY.md) — what is / is not sandboxed  
+- [examples/prompts/starter.md](../examples/prompts/starter.md) — more tasks  
+- [self-improvement.md](self-improvement.md) — `knowledge.json` / JSONL  
+- [architecture.md](architecture.md) — loop wiring  
+- [COMPARISONS.md](COMPARISONS.md) — vs Genie / LangChain / etc.

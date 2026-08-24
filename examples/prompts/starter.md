@@ -20,6 +20,18 @@ Implement push, pop, and peek. Popping empty raises IndexError.
 Keep tests in test_stack.py and instantiate Stack() in every test.
 ```
 
+## Multi-file
+
+```text
+Build a todo CLI: main.py (entry), models.py (data), commands.py (actions).
+Include pytest tests. Only mark complete when tests pass.
+```
+
+```text
+Create user.py with a User class (__init__, to_dict) and test_user.py.
+Then add validator.py with validate_email(s) used by User. Tests must pass.
+```
+
 ## Harness-oriented
 
 ```text
