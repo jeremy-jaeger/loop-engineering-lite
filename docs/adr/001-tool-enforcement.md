@@ -13,8 +13,9 @@ With local Qwen-class models the agent often *described* a tool use, set
 Enforce tools in the prompt **and** in the engine:
 
 - System prompt forbids narrating actions without a `tool_call`.
-- If `complete` arrives with an empty `final_answer`, inject an error and retry
-  (unless a verified simulation already landed).
+- If `complete` arrives without a passing verification command, inject an
+  error and retry (ADR-006). Empty `final_answer` after a verified run is
+  filled in by the harness.
 
 ## Consequences
 

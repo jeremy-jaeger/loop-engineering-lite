@@ -29,13 +29,16 @@ product features. This repository names them:
 ## Target pillars
 
 1. **Composable world-model core** — latent + symbolic state, action-conditioned
-   rollouts, a progress head. *Lite stand-in:* the VFS sandbox.
+   rollouts, a progress head. *Shipped stand-in:* the VFS sandbox (`fork` /
+   `adopt` exist; a learned value head does not).
 2. **Trajectory engine** — capture, filter, optional offline update of
-   checkpoints or adapters.
+   checkpoints or adapters. *Shipped:* reward-labeled JSONL. *Not shipped:*
+   a bundled trainer.
 3. **Harness layer** — drop-in adapters so existing tools get planning/learning.
 4. **Verification and safety** — sandboxes, consistency checks, HITL for
-   high-stakes domains.
+   high-stakes domains. *Shipped:* pytest/unittest gate + path jail.
 5. **Benchmark suite** — long-horizon tasks with strict success metrics.
+   *Shipped:* the [case studies](case-studies/README.md), not a public leaderboard.
 6. **Lightweight swarm composability** — stay fast enough for sub-2B models and
    many isolated sandboxes without swap death.
 

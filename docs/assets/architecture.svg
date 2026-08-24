@@ -22,7 +22,7 @@
   <rect x="1" y="1" width="1098" height="558" rx="24" fill="none" stroke="#1f2937" stroke-width="2"/>
 
   <text x="48" y="52" fill="#e5e7eb" font-family="ui-sans-serif, system-ui, sans-serif" font-size="22" font-weight="700">Execution flywheel</text>
-  <text x="48" y="78" fill="#9ca3af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14">Nothing hits disk until the sandbox simulation returns a binary success signal.</text>
+  <text x="48" y="78" fill="#9ca3af" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14">Nothing hits disk until the last sandbox command is a passing pytest or unittest run.</text>
 
   <!-- boxes -->
   <g font-family="ui-sans-serif, system-ui, sans-serif">
@@ -49,7 +49,7 @@
     <rect x="178" y="330" width="240" height="110" rx="16" fill="#0f172a" stroke="#34d399" stroke-width="1.5"/>
     <text x="298" y="375" text-anchor="middle" fill="#6ee7b7" font-size="12" letter-spacing="1.5">COMMIT</text>
     <text x="298" y="400" text-anchor="middle" fill="#f9fafb" font-size="16" font-weight="600">Write to reality</text>
-    <text x="298" y="422" text-anchor="middle" fill="#9ca3af" font-size="12">only after success</text>
+    <text x="298" y="422" text-anchor="middle" fill="#9ca3af" font-size="12">pytest/unittest only</text>
 
     <rect x="478" y="330" width="240" height="110" rx="16" fill="#0f172a" stroke="#fb7185" stroke-width="1.5"/>
     <text x="598" y="375" text-anchor="middle" fill="#fda4af" font-size="12" letter-spacing="1.5">LEARN</text>

@@ -1,0 +1,14 @@
+
+[START] Agent initialized with prompt:
+> Write a validated email helper
+
+[WORLD MODEL] Virtual File System loaded. Reality is sandboxed.
+
+--- Iteration 1 ---
+[REASONING]
+Stall without a tool.
+
+[HARNESS INTERVENTION] No tool call specified while in progress.
+
+[ABORT] Maximum iterations reached without verified task completion.
+[DATASET EXPORT] rejected / unverified trajectory saved to $WORKSPACE/rejected.jsonl (reward=0.0).

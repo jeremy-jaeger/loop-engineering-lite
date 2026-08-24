@@ -28,7 +28,7 @@
     <text x="148" y="336" fill="#86efac">[SIMULATION VERIFIED SUCCESS]</text>
     <text x="24" y="360" fill="#86efac">3 passed in 0.04s</text>
     <text x="24" y="392" fill="#34d399">[VFS COMMIT]</text>
-    <text x="140" y="392" fill="#cbd5e1"> Writing successful simulation back to reality...</text>
+    <text x="140" y="392" fill="#cbd5e1"> Writing agent-touched files back to disk...</text>
     <text x="24" y="424" fill="#60a5fa">[DATASET EXPORT]</text>
     <text x="172" y="424" fill="#cbd5e1"> Trajectory saved to dataset.jsonl</text>
     <text x="24" y="456" fill="#fb7185">[MEMORY SAVED]</text>

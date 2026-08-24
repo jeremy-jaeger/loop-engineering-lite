@@ -1,11 +1,12 @@
 # Contributing
 
-Thanks for taking this runtime seriously. The bar is **small, verified, local**.
+The bar is **small, verified, local**.
 
 ## Before you write code
 
-1. Read [docs/NORTH_STAR.md](docs/NORTH_STAR.md) so you know what we are *not* claiming.
-2. Skim [docs/architecture.md](docs/architecture.md) and the ADRs in [docs/adr/](docs/adr/).
+1. Read [docs/NORTH_STAR.md](docs/NORTH_STAR.md) so you know what we are not claiming.
+2. Skim [docs/architecture.md](docs/architecture.md), [docs/comparison.md](docs/comparison.md),
+   and the ADRs in [docs/adr/](docs/adr/).
 3. Open an issue if the change is more than a docs typo.
 
 ## Dev setup
@@ -21,31 +22,35 @@ pip install -e ".[dev]"
 You do **not** need Ollama for unit tests:
 
 ```bash
-python -m pytest -q
+python3 -m pytest -q
+python3 scripts/capture_case_studies.py --check
+python3 examples/offline_vfs_demo.py
 ```
 
 You **do** need [Ollama](https://ollama.com) for a live loop:
 
 ```bash
 ollama pull qwen3.5:0.8b
-python3 main.py "Use TDD to write is_palindrome in /tmp/demo_palindrome.py"
+python3 main.py --workspace /tmp/lel-demo --no-reflect \
+  "Use TDD to write is_palindrome in str_utils.py"
 ```
 
-Prefer running live demos from an empty directory so `commit_to_reality` cannot overwrite this repo.
+Always pass `--workspace` (or `cd`) to an empty directory so
+`commit_to_reality` cannot overwrite this repo.
 
 ## What we want
 
 - Harness interventions that catch real model failure modes
-- Stronger sandboxing and clearer verification signals
+- New case studies with logs when you find a new failure
 - Tests that do not require a GPU or a network model
 - Honest docs when a feature is aspirational vs implemented
-- The live pulse SVG (`make pulse`) if you change `scripts/generate_pulse.py`
 
 ## What we will bounce
 
 - Framework rewrites that add a stack without a verification story
-- Prompt-only "self-improvement" with no artifact or test
+- Prompt-only “self-improvement” with no artifact or test
 - Drive-by dependency explosions (the runtime is stdlib + Ollama on purpose)
+- Vanity metrics in the README (stars, pulses, generated hero art)
 
 ## Style
 
@@ -58,5 +63,7 @@ Prefer running live demos from an empty directory so `commit_to_reality` cannot 
 - One concern per PR
 - Update examples or docs when user-visible behavior changes
 - Fill in the PR template test plan
+- Do not include editor-vendor badges, agent footers, or generated
+  “open in …” chips
 
 By contributing, you agree that your work is licensed under the MIT License.

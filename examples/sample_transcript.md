@@ -1,10 +1,11 @@
 # Sample transcript
 
-This is a cleaned log from a palindrome TDD prompt. Your model and seed will
-differ; the **shape** should not: think → tool → observation → verify → commit.
+This is the **shape** of a verified palindrome TDD run. Your model and
+seed will differ; the gate should not: think → tool → observation →
+pytest → commit.
 
 ```text
-=== Starting Lightweight Local Agent ===
+=== Starting local agent loop ===
 
 [START] Agent initialized with prompt:
 > Use TDD to write is_palindrome in str_utils.py ...
@@ -27,10 +28,11 @@ Write tests first so the implementation has a spec.
 3 passed in 0.05s
 
 [SUCCESS - TASK COMPLETE]
-[VFS COMMIT] Writing successful simulation back to reality...
-[DATASET EXPORT] Pristine trajectory saved to dataset.jsonl
-[REFLECTION PASS] Analyzing execution trace for capability growth...
+[VFS COMMIT] Writing agent-touched files back to disk...
+[VFS COMMIT] 2 file(s) written.
+[DATASET EXPORT] chosen / verified trajectory saved to dataset.jsonl (reward=1.0).
 ```
 
-If you instead see `[HARNESS INTERVENTION] No tool call specified`, the model
-left JSON rails. That is expected on tiny models; the loop will nag and retry.
+If you instead see `[HARNESS INTERVENTION] Refusing unverified completion`,
+the model tried to finish without a green test run. That is the product
+working. Recorded failures: [docs/case-studies](../docs/case-studies/README.md).

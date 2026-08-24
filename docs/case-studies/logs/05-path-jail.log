@@ -1,0 +1,6 @@
+Error: path '../escape.py' is outside the workspace.
+host_exists: False
+
+[VFS COMMIT BLOCKED] Refusing to write unverified VFS state to disk.
+commit: False
+verified: False
