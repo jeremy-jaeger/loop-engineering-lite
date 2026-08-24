@@ -40,6 +40,17 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
         response = call_ollama(messages)
         reasoning = response.get("thought_process", "No reasoning provided.")
         print(f"[REASONING]\n{reasoning}\n")
+
+        if response.get("_inference_error"):
+            print("[HARNESS INTERVENTION] Inference error — retry without committing.")
+            messages.append({
+                "role": "user",
+                "content": (
+                    "Error: The previous model response was invalid JSON / inference failed. "
+                    "Respond again with a single valid JSON object and continue the task."
+                ),
+            })
+            continue
         
         # --- SMART COMPLETION CHECK ---
         if response.get("status") == "complete":
@@ -57,6 +68,23 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
                         "content": "Error: You marked status as 'complete' but did not provide a 'final_answer' or perform any actions."
                     })
                     continue
+
+            # Only commit when the world model actually verified a successful simulation.
+            verified = any(
+                "[SIMULATION VERIFIED SUCCESS]" in (m.get("content") or "")
+                for m in messages
+                if m.get("role") == "user"
+            )
+            if not verified:
+                print("[HARNESS INTERVENTION] Refusing complete without a verified simulation. Forcing retry...")
+                messages.append({
+                    "role": "user",
+                    "content": (
+                        "Error: status 'complete' is only allowed after a tool observation "
+                        "containing [SIMULATION VERIFIED SUCCESS]. Fix the code, re-run pytest, then complete."
+                    ),
+                })
+                continue
 
             print(f"[SUCCESS - TASK COMPLETE]\nFinal Answer: {final_ans}\n")
             
