@@ -62,20 +62,20 @@ We keep those two documents separate on purpose.
 
 ```mermaid
 sequenceDiagram
-    participant You
-    participant Loop as loop.py
-    participant LLM as Ollama
-    participant VFS as vfs.py
-    You->>Loop: python3 main.py "Use TDD to..."
-    Loop->>LLM: messages + JSON schema
-    LLM-->>Loop: tool_call write_file / run_command
-    Loop->>VFS: mutate dict / simulate in tempdir
-    VFS-->>Loop: [SIMULATION VERIFIED SUCCESS] or FAIL
+    actor User
+    participant Harness
+    participant Ollama
+    participant VFS
+    User->>Harness: python3 main.py with a TDD task
+    Harness->>Ollama: messages plus JSON schema
+    Ollama-->>Harness: tool_call write_file or run_command
+    Harness->>VFS: mutate dict or simulate in tempdir
+    VFS-->>Harness: verified success or fail
     alt score 1.0 and status complete
-        Loop->>VFS: commit_to_reality()
-        Loop->>Loop: knowledge.json + dataset.jsonl
+        Harness->>VFS: commit_to_reality
+        Harness->>Harness: knowledge.json and dataset.jsonl
     else still in progress
-        Loop->>LLM: observation truncated if huge
+        Harness->>Ollama: observation truncated if huge
     end
 ```
 
