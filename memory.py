@@ -6,6 +6,8 @@ import urllib.error
 KNOWLEDGE_FILE = "knowledge.json"
 DATASET_FILE = "dataset.jsonl"
 REJECTED_FILE = os.path.join("data", "rejected.jsonl")
+SEARCH_DPO_FILE = os.path.join("data", "search_dpo.jsonl")
+SEARCH_DPO_FILE = SEARCH_DPO_FILE
 DATASET_FILE = DATASET_FILE
 REJECTED_FILE = REJECTED_FILE
 OLLAMA_URL = "http://localhost:11434/api/chat"

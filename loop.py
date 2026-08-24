@@ -2,7 +2,9 @@ import json
 from llm_client import call_ollama
 from tools import execute_tool
 from memory import reflect_on_trace, export_trajectory_jsonl
-from vfs import VirtualFileSystem
+from vfs import VirtualFileSystem, is_verification_command
+from search import best_of_n, collect_candidates
+from world_model import MUTATING_TOOLS
 
 UNVERIFIED_COMPLETE_MSG = (
     "Error: status 'complete' is not allowed until the last run_command is a "
@@ -26,6 +28,15 @@ def last_observation_verified(messages):
     if not messages:
         return False
     return "[SIMULATION VERIFIED SUCCESS]" in str(messages[-1].get("content", ""))
+
+
+def infer_verify_command(vfs, explicit=None):
+    if explicit:
+        return explicit
+    for item in reversed(vfs.command_history or []):
+        if is_verification_command(item.get("command", "")):
+            return item["command"]
+    return None
 
 def _export_rejected(messages, task, vfs):
     last = vfs.last_command() if vfs else None
@@ -57,6 +68,8 @@ def run_agent_loop(
     workspace=".",
     call_model=None,
     enable_reflection=True,
+    search_width=1,
+    verify_command=None,
 ):
     print(f"\n[START] Agent initialized with prompt:\n> {initial_prompt}\n")
     call_model = call_model or call_ollama
@@ -121,11 +134,27 @@ def run_agent_loop(
 
             print(f"[ACTION] Calling tool '{tool_name}' with args: {tool_args}")
 
-            raw_observation = execute_tool(vfs, tool_name, tool_args)
+            observation = None
+            if search_width > 1 and tool_name in MUTATING_TOOLS:
+                candidates = collect_candidates(call_model, messages, response, search_width)
+                if len(candidates) > 1:
+                    chosen, observation, report = best_of_n(
+                        vfs,
+                        candidates,
+                        verify_command=infer_verify_command(vfs, verify_command),
+                        task=initial_prompt,
+                    )
+                    if chosen is not None:
+                        response = chosen
+                        tool_name = (chosen.get("tool_call") or {}).get("name") or tool_name
+                        print(f"[SEARCH] considered {report.get('tried')} unique actions")
 
-            safe_observation = truncate_text(raw_observation)
-            if len(raw_observation) != len(safe_observation):
-                print(f"[HARNESS INTERVENTION] Truncated massive observation from {len(raw_observation)} to {len(safe_observation)} characters.")
+            if observation is None:
+                observation = execute_tool(vfs, tool_name, tool_args)
+
+            safe_observation = truncate_text(observation)
+            if len(observation) != len(safe_observation):
+                print(f"[HARNESS INTERVENTION] Truncated massive observation from {len(observation)} to {len(safe_observation)} characters.")
 
             print(f"[OBSERVATION]\n{safe_observation}\n")
 

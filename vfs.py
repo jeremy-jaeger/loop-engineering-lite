@@ -66,6 +66,35 @@ class VirtualFileSystem:
             return f"Error: '{rel_path}' not found in VFS."
         return self.state.get(safe_path, f"Error: '{safe_path}' not found in VFS.")
 
+    def fork(self):
+        """Copy-on-write clone. Child mutations never touch the host or the parent dict."""
+        child = VirtualFileSystem.__new__(VirtualFileSystem)
+        child.base_dir = self.base_dir
+        child.state = dict(self.state)
+        child.touched_paths = set(self.touched_paths)
+        child.command_history = list(self.command_history)
+        return child
+
+    def adopt(self, other):
+        """Replace this VFS with a fork's state (still not a host write)."""
+        if not isinstance(other, VirtualFileSystem):
+            raise TypeError("adopt expects a VirtualFileSystem")
+        self.state = dict(other.state)
+        self.touched_paths = set(other.touched_paths)
+        self.command_history = list(other.command_history)
+
+    def snapshot(self):
+        return {
+            "state": dict(self.state),
+            "touched_paths": set(self.touched_paths),
+            "command_history": list(self.command_history),
+        }
+
+    def restore(self, snap):
+        self.state = dict(snap["state"])
+        self.touched_paths = set(snap["touched_paths"])
+        self.command_history = list(snap["command_history"])
+
     def record_command(self, command, score):
         self.command_history.append({"command": command, "score": float(score)})
 
@@ -73,6 +102,8 @@ class VirtualFileSystem:
         if not self.command_history:
             return None
         return self.command_history[-1]
+
+    last_command = last_command
 
     def verified_command(self):
         last = self.last_command()
@@ -83,6 +114,13 @@ class VirtualFileSystem:
     def is_task_verified(self):
         """Last command must be a passing test/verification rollout."""
         return self.verified_command() is not None
+
+    def value(self):
+        """Symbolic progress head: last verification score, else None (unknown)."""
+        last = self.last_command()
+        if last and is_verification_command(last["command"]):
+            return float(last["score"])
+        return None
 
     def simulate_command(self, command, timeout=10):
         temp_dir = tempfile.mkdtemp(prefix="agent_sim_")
@@ -140,7 +178,12 @@ class VirtualFileSystem:
     write_file = write_file
     commit_to_reality = commit_to_reality
     is_task_verified = is_task_verified
+    is_task_verified = is_task_verified
     record_command = record_command
     last_command = last_command
+    last_command = last_command
+    record_command = record_command
     verified_command = verified_command
     simulate_command = simulate_command
+    fork = fork
+    adopt = adopt

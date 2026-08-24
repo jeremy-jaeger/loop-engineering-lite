@@ -101,7 +101,7 @@ What actually exists, versus what `goal.md` and `context_payload.md` claim:
 
 | Pillar | Claimed | In the repo today |
 |---|---|---|
-| World-model core | Compositional latent/symbolic WM with rollouts | In-memory file dict + tempdir `subprocess` (`vfs.py`). No latents, no progress head, no counterfactual API. |
+| World-model core | Compositional latent/symbolic WM with rollouts | Symbolic VFS with `fork` / `rollout` / `value` (`world_model.py`). Value head = pytest/unittest, not a learned latent. No video/action models. |
 | Trajectory / self-improvement | Offline RL / DPO / MLX adapters | Reward-gated JSONL + DPO pairs + MLX/PEFT train plan + eval/promote gate (`improve/`). Weights update only on Apple Silicon / PEFT hosts; this environment writes a plan. |
 | Harness | Drop-in adapters for other frameworks | Single Ollama JSON ReAct loop (`loop.py` + `main.py`). |
 | Verification / safety | Sandbox + consistency + HITL + rollback | Tempdir sim for `run_command`. Commit/export/reflect gated on last passing pytest/unittest (ADR-006). |
@@ -138,35 +138,38 @@ Out of scope for this stage: MLX/LoRA, GGUF fusion, swarm spawning, framework ad
 ### 4. Stage sequence after ADR-006
 1. **ADR-006:** verification gate + reward-labeled trajectories + DPO reject set + scoped commits.
 2. **ADR-005:** offline adapter training + held-out eval + promote gate (implemented).
-3. **ADR-007 (next):** verifier-guided test-time search over forked VFS states — the lite-model capability multiplier.
+3. **ADR-007:** verifier-guided test-time search over forked VFS states (implemented).
 4. **Then:** parallel VFS swarm workers, then framework adapters.
 
 ---
 
-## ADR-007: Verifier-Guided Test-Time Search (Next — top of lite-model loop engineering)
+## ADR-007: Verifier-Guided Test-Time Search (Lite-model capability multiplier)
 
 **Date:** 2026-08-24
-**Status:** Accepted as next stage (not yet implemented)
+**Status:** Implemented (2026-08-24)
 
 ### 1. Context
 ADR-005 updates weights from verified traces. That mostly teaches a 0.8B–2B model the *harness* (JSON, pytest, TDD order). It does not buy much *solution search*. Sub-2B policies are weak one-shot TDD solvers; they become strong when a cheap, exact verifier scores many candidate rollouts — the same pattern as AlphaZero / Best-of-N / process-reward methods, except our world model is a copy-on-write file dict plus `python3 -m pytest` in a tempdir.
 
-That is the distinctive engineering feat for *this* repo: not a bigger LoRA, not a generic swarm wrapper, but making the VFS a first-class search substrate at inference time.
+This is the first North Star pillar that is now *real* rather than aspirational: a queryable world model (`fork` / `rollout` / `value`) with action-conditioned counterfactuals, scored by the verifier, before any host write.
 
 ### 2. Decision
-Implement **Best-of-N (then MCTS-lite) over forked VFS states**:
+Implemented **Best-of-N over forked VFS states**:
 
-1. **COW fork:** `VirtualFileSystem.fork()` copies `state`, `touched_paths`, and `command_history` without touching the host.
-2. **Branch at action time:** when the policy emits a `write_file` / `search_and_replace` / `run_command`, sample K candidates (temperature > 0). Apply each on a fork.
-3. **Score with the existing binary verifier:** run the task's test command via `simulate_command`. Keep argmax; discard losers.
-4. **Online DPO:** export (winner, loser) pairs for the same task prefix into `data/rejected.jsonl` / chosen JSONL so ADR-005 trains on *search leftovers*, not just full-episode outcomes.
-5. **Budget:** cap K and wall time so a swarm of 0.8B workers still fits in laptop RAM — search is the multiplier, not parameter count.
+1. **`VirtualFileSystem.fork()` / `adopt()` / `snapshot()` / `restore()`** — child mutations never touch the host or the parent dict.
+2. **`SymbolicWorldModel`** — `step`, `rollout`, `value`. The value head is the last verification score (`1.0` / `0.0` / `None`).
+3. **`search.best_of_n`** — apply each mutating tool call on a fork, score with `verify_command` (or last pytest/unittest in history), adopt the winner.
+4. **Online DPO** — winner/loser pairs go to `data/search_dpo.jsonl` for ADR-005.
+5. **Loop hook** — `run_agent_loop(..., search_width=K, verify_command=...)`. Default `K=1` preserves prior behavior.
 
-Out of scope here: latent video world models, multi-framework adapters.
+Out of scope still: learned latents, video/action models, MCP adapters, process-level swarm.
 
 ### 3. Consequences
-*   **Positive:** A 0.8B model can beat a larger one-shot model on harnessed TDD because the loop, not the weights, does the search. Combined with ADR-005, format is learned in weights and solutions are found at test time. This is the actual "loop engineering" product.
-*   **Negative:** K rollouts multiply `simulate_command` cost. Requires a real `fork()` that does not leak forks into `commit_to_reality`.
+*   **Positive:** Simulation-before-destruction is now an API, not a slogan. A 0.8B model can beat a larger one-shot model on harnessed TDD because the loop searches. Search leftovers train DPO. `fork()` is the primitive swarm will reuse.
+*   **Negative:** `K` multiplies `simulate_command` cost. Without an explicit `verify_command` (or a prior failing pytest in history), writes score as 0.5 and search is weak.
 
-### 4. Why this sits above swarm
-Swarm (N isolated agents) is scale-out of the same one-shot policy. Test-time VFS search is scale-*in* intelligence per token. Do search first; then spawn many searchers.
+### 4. Remaining North Star gap
+1. **Swarm:** N processes each running `search_width=K` (reuse fork; add a process pool).
+2. **Harness adapters:** wrap `SymbolicWorldModel.rollout` for other frameworks.
+3. **Learned value head:** distill pytest scores into a cheap critic so search need not always shell out.
+4. **Embodied/browser substrates:** new world-model backends behind the same `fork/rollout/value` interface.

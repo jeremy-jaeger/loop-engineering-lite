@@ -5,9 +5,10 @@ A local ReAct harness for sub-2B models: VFS world model, binary test verificati
 ## Loop
 ```
 python3 main.py "Use TDD to write clamp(x, lo, hi) with tests."
+python3 -c "from loop import run_agent_loop; run_agent_loop('...', search_width=3, verify_command='python3 -m pytest -q')"
 ```
 
-Unverified `complete` does not write the host disk and does not enter SFT data (ADR-006).
+Unverified `complete` does not write the host disk (ADR-006). `search_width>1` forks the VFS, scores candidates with tests, and keeps the winner (ADR-007).
 
 ## Weight flywheel (ADR-005)
 ```
@@ -22,5 +23,5 @@ Promoted tags are read by `llm_client.resolve_ollama_model()`.
 
 ## Tests
 ```
-python3 -m unittest test_adr006 test_adr005 -v
+python3 -m unittest test_adr006 test_adr005 test_adr007 -v
 ```
