@@ -17,6 +17,7 @@ and this project uses [Semantic Versioning](https://semver.org/).
 - ShareGPT-style trajectory export to `dataset.jsonl`
 - Batch TDD dataset generator (`scripts/generate_dataset.sh`)
 - Public-repo docs, examples, diagrams, and stdlib unit tests
+- Self-updating `docs/assets/pulse.svg` (GitHub Action redraws generative art from live repo stats)
 
 ### Known limits
 

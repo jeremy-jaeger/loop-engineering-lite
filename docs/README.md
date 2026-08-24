@@ -8,7 +8,8 @@
 | [self-improvement.md](self-improvement.md) | knowledge.json and JSONL |
 | [faq.md](faq.md) | Short answers |
 | [adr/](adr/) | Why those tradeoffs |
-| [assets/](assets/) | Banner, diagrams |
+| [pulse.md](pulse.md) | CI-redrawn generative stats |
+| [assets/](assets/) | Banner, diagrams, live pulse |
 
 Graphics are intentionally simple (SVG + a small JPEG hero) so GitHub pages
 and clones stay light.

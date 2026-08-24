@@ -39,6 +39,7 @@ Prefer running live demos from an empty directory so `commit_to_reality` cannot 
 - Stronger sandboxing and clearer verification signals
 - Tests that do not require a GPU or a network model
 - Honest docs when a feature is aspirational vs implemented
+- The live pulse SVG (`make pulse`) if you change `scripts/generate_pulse.py`
 
 ## What we will bounce
 

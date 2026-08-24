@@ -1,4 +1,4 @@
-.PHONY: help test run demo lint
+.PHONY: help test run demo pulse
 
 help:
 	@echo "make test   — unit tests (no Ollama)"
@@ -14,3 +14,6 @@ run:
 
 demo:
 	@sed -n '1,80p' examples/prompts/starter.md
+
+pulse:
+	python3 scripts/generate_pulse.py

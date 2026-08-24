@@ -1,0 +1,44 @@
+name: Pulse
+
+# Redraws docs/assets/pulse.svg from this repo's own GitHub stats.
+# The commit uses [skip ci] so we do not recurse into CI / this workflow.
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/generate_pulse.py"
+      - ".github/workflows/pulse.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  draw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate pulse
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python3 scripts/generate_pulse.py
+      - name: Commit if the drawing changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/assets/pulse.svg docs/pulse.md
+          if git diff --staged --quiet; then
+            echo "Pulse unchanged"
+            exit 0
+          fi
+          git commit -m "chore: refresh live repository pulse [skip ci]"
+          git push

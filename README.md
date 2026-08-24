@@ -45,6 +45,12 @@ We keep those two documents separate on purpose.
 ## See it
 
 <p align="center">
+  <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
+</p>
+
+<p align="center"><sub>The field above is not a static illustration. A scheduled Action calls the GitHub API and <a href="scripts/generate_pulse.py">redraws the SVG</a> from this repo’s own stars, forks, watchers, and contributors. Meta on purpose — see <a href="docs/pulse.md">docs/pulse.md</a>.</sub></p>
+
+<p align="center">
   <img src="docs/assets/terminal-demo.svg" alt="Example terminal session of a verified TDD loop" width="920">
 </p>
 
@@ -121,7 +127,7 @@ memory.py          knowledge.json + dataset.jsonl
 knowledge.json     surviving lessons from past runs
 docs/              architecture, ADRs, FAQ, graphics
 examples/          prompts, offline demo, prior TDD artifacts
-scripts/           batch dataset generation
+scripts/           dataset batch + live pulse graphic
 tests/             stdlib tests
 ```
 
