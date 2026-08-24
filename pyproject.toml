@@ -3,10 +3,50 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "agent-loop"
+name = "loop-engineering-lite"
 version = "0.1.0"
-description = "A lightweight, self-healing local AI agent harness."
+description = "Local agent harness: sandboxed VFS world model, verified commits, trajectory export."
+readme = "README.md"
+license = { file = "LICENSE" }
 requires-python = ">=3.9"
+authors = [
+  { name = "jeremy-jaeger" }
+]
+keywords = [
+  "agents",
+  "ollama",
+  "local-llm",
+  "vfs",
+  "tdd",
+  "self-improvement",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Intended Audience :: Developers",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0"]
+
+[project.urls]
+Homepage = "https://github.com/jeremy-jaeger/loop-engineering-lite"
+Issues = "https://github.com/jeremy-jaeger/loop-engineering-lite/issues"
+Changelog = "https://github.com/jeremy-jaeger/loop-engineering-lite/blob/main/CHANGELOG.md"
 
 [project.scripts]
 agent-loop = "main:cli_entry"
+
+[tool.setuptools]
+py-modules = ["main", "loop", "llm_client", "tools", "memory", "vfs", "search", "world_model"]
+packages = ["improve"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

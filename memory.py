@@ -40,7 +40,7 @@ def save_knowledge(task, lesson):
         json.dump(knowledge, f, indent=4)
     print(f"[MEMORY SAVED] New heuristic committed to {KNOWLEDGE_FILE}.")
 
-def export_trajectory_jsonl(messages, reward, task, verified_command=None, path=None):
+def export_trajectory_jsonl(messages, reward=1.0, task="", verified_command=None, path=None):
     """
     Serialize an execution trace with an explicit binary reward.
     reward 1.0 -> dataset.jsonl (SFT / chosen)
@@ -71,6 +71,7 @@ def export_trajectory_jsonl(messages, reward, task, verified_command=None, path=
     except Exception as e:
         print(f"[DATASET ERROR] Could not export trajectory: {e}")
 
+export_trajectory_jsonl = export_trajectory_jsonl
 export_trajectory_jsonl = export_trajectory_jsonl
 
 

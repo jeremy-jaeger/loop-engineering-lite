@@ -173,5 +173,3 @@ def run_agent_loop(
     return None
 
 
-run_agent_loop = run_agent_loop
-run_agent_loop = run_agent_loop

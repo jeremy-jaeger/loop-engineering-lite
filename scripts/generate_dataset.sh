@@ -1,9 +1,13 @@
-#!/bin/bash
-echo "Starting Autonomous Data Generation..."
-
+#!/usr/bin/env bash
+# Feed TDD tasks through the live loop and collect verified traces.
+# Requires Ollama. Writes into this repository's working tree — use a copy if that matters.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
 mkdir -p data adapters
+echo "Starting autonomous data generation from $ROOT"
 
-# Progressively harder TDD tasks (training distribution). Held-out eval tasks live in improve/evaluate.py.
+# Training-distribution TDD tasks. Held-out eval lives in improve/evaluate.py.
 tasks=(
   "Use TDD to write a Python string utility in 'str_utils.py' that checks if a string is a palindrome. Write tests for 'racecar', 'hello', and an empty string."
   "Use TDD to build a 'Temperature' class in 'temp.py' that initializes in Celsius but has a property to get Fahrenheit. Test freezing and boiling points."
@@ -12,13 +16,14 @@ tasks=(
   "Use TDD to write a 'validate_email(email)' function using regex in 'validator.py'. Test 'test@test.com', 'invalid-email', and '@missingusername.com'."
 )
 
+rm -f dataset.jsonl
 for task in "${tasks[@]}"; do
   echo "-----------------------------------"
-  echo "Running Task: $task"
+  echo "Running task: $task"
   python3 main.py "$task"
 done
 
-if [ -f dataset.jsonl ]; then
+if [[ -f dataset.jsonl ]]; then
   cp dataset.jsonl data/train.jsonl
   echo "[DATA CAPTURED] Verified traces in dataset.jsonl and data/train.jsonl"
 else

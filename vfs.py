@@ -177,6 +177,8 @@ class VirtualFileSystem:
     # Test / older-call-site aliases
     write_file = write_file
     commit_to_reality = commit_to_reality
+    write_file = write_file
+    commit_to_reality = commit_to_reality
     is_task_verified = is_task_verified
     is_task_verified = is_task_verified
     record_command = record_command

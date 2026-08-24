@@ -53,18 +53,18 @@ def execute_tool(vfs, tool_name, tool_args):
     if tool_name in ("list_files", "list_files"):
         return list_files(vfs)
     elif tool_name in ("read_file", "read_file"):
-        path = tool_args.get("filepath", tool_args.get("filepath", ""))
+        path = tool_args.get("filepath") or tool_args.get("filepath") or ""
         return read_file(vfs, path)
     elif tool_name in ("write_file", "write_file"):
-        path = tool_args.get("filepath", tool_args.get("filepath", ""))
+        path = tool_args.get("filepath") or tool_args.get("filepath") or ""
         return write_file(vfs, path, tool_args.get("content", ""))
     elif tool_name in ("search_and_replace", "search_and_replace"):
-        path = tool_args.get("filepath", tool_args.get("filepath", ""))
+        path = tool_args.get("filepath") or tool_args.get("filepath") or ""
         return search_and_replace(
             vfs,
             path,
-            tool_args.get("old_code", tool_args.get("old_code", "")),
-            tool_args.get("new_code", tool_args.get("new_code", "")),
+            tool_args.get("old_code") or tool_args.get("old_code") or "",
+            tool_args.get("new_code") or tool_args.get("new_code") or "",
         )
     elif tool_name in ("run_command", "run_command"):
         return run_command(vfs, tool_args.get("command", ""))
@@ -72,4 +72,5 @@ def execute_tool(vfs, tool_name, tool_args):
         return f"Error: The tool '{tool_name}' does not exist."
 
 
+execute_tool = execute_tool
 execute_tool = execute_tool

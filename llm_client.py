@@ -1,9 +1,7 @@
 import json
 import os
-from pyexpat.errors import messages
 import urllib.request
 import urllib.error
-from xml.parsers.expat import model
 from memory import load_knowledge
 from improve import config
 
@@ -104,3 +102,7 @@ def call_ollama(messages, model=None):
     except Exception as e:
         print(f"\n[ERROR] Inference failed: {e}")
         return {"status": "complete", "final_answer": "Execution failed."}
+
+
+call_ollama = call_ollama
+call_ollama = call_ollama
