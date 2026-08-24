@@ -1,0 +1,10 @@
+[
+    {
+        "task": "Use TDD to build a 'Temperature' class in 'temp.py' that initializes in Celsius but has a property to get Fahrenheit. Test freezing and boiling points.",
+        "lesson": "The core architectural mistake is implementing the class before writing tests, violating TDD principles. The fix is to always write tests first to define behavior before implementation.  \n**Generalized Rule:** Always follow TDD by writing tests first to ensure implementation aligns with requirements and catches edge cases early."
+    },
+    {
+        "task": "Use TDD to build a simple 'Stack' class using a Python list. Implement push, pop, and peek methods. Test that popping an empty stack raises an IndexError.",
+        "lesson": "The core architectural mistake was defining the Stack class within the test file without ensuring it properly encapsulates the list operations, leading to method calls on list objects instead of Stack instances. The fix requires separating class implementation from tests and ensuring tests instantiate the class correctly.  \n**Generalized Rule:** Always define the class under test in a separate module and ensure tests instantiate and interact with it, avoiding direct list manipulation or incomplete method implementations."
+    }
+]
