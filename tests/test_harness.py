@@ -4,6 +4,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -12,6 +13,8 @@ from loop import truncate_text  # noqa: E402
 from vfs import VirtualFileSystem  # noqa: E402
 from tools import execute_tool  # noqa: E402
 import memory  # noqa: E402
+import main as main_mod  # noqa: E402
+from llm_client import chat_url  # noqa: E402
 
 
 class TruncateTests(unittest.TestCase):
@@ -55,6 +58,16 @@ class VfsTests(unittest.TestCase):
         path = os.path.join(self.td.name, "out", "a.txt")
         with open(path, encoding="utf-8") as f:
             self.assertEqual(f.read(), "committed")
+
+    def test_nested_multi_file_keys(self):
+        self.vfs.write_file("pkg/models.py", "X = 1\n")
+        self.vfs.write_file("pkg/commands.py", "from pkg.models import X\nprint(X)\n")
+        # Nested package needs __init__ for import in simulate; write flat scripts instead
+        self.vfs.write_file("models.py", "X = 1\n")
+        self.vfs.write_file("commands.py", "import models\nprint(models.X)\n")
+        score, out = self.vfs.simulate_command("python3 commands.py")
+        self.assertEqual(score, 1.0)
+        self.assertIn("1", out)
 
 
 class ToolTests(unittest.TestCase):
@@ -109,6 +122,45 @@ class MemoryTests(unittest.TestCase):
         with open("dataset.jsonl", encoding="utf-8") as f:
             line = f.read().strip()
         self.assertIn("hi", line)
+
+
+class CliTests(unittest.TestCase):
+    def test_chat_url_strips_slash(self):
+        self.assertEqual(chat_url("http://localhost:11434/"), "http://localhost:11434/api/chat")
+        self.assertEqual(memory.chat_url("http://x:1"), "http://x:1/api/chat")
+
+    def test_parser_defaults(self):
+        args = main_mod.build_parser().parse_args(["do the thing"])
+        self.assertEqual(args.prompt, "do the thing")
+        self.assertEqual(args.max_iters, 10)
+        self.assertEqual(args.model, "qwen3.5:0.8b")
+        self.assertEqual(args.llm_api_base, "http://localhost:11434")
+
+    def test_parser_flags(self):
+        args = main_mod.build_parser().parse_args(
+            ["--model", "qwen2:0.5b", "--max-iters", "3", "--llm-api-base", "http://127.0.0.1:1234", "task"]
+        )
+        self.assertEqual(args.model, "qwen2:0.5b")
+        self.assertEqual(args.max_iters, 3)
+        self.assertEqual(args.llm_api_base, "http://127.0.0.1:1234")
+        self.assertEqual(args.prompt, "task")
+
+    def test_cli_entry_forwards_kwargs(self):
+        with mock.patch("main.run_agent_loop", return_value="ok") as mocked:
+            code = main_mod.cli_entry(
+                ["--model", "m", "--max-iters", "2", "--llm-api-base", "http://h", "hello"]
+            )
+        self.assertEqual(code, 0)
+        mocked.assert_called_once_with(
+            initial_prompt="hello",
+            max_iterations=2,
+            model="m",
+            llm_api_base="http://h",
+        )
+
+    def test_cli_rejects_bad_max_iters(self):
+        with self.assertRaises(SystemExit):
+            main_mod.cli_entry(["--max-iters", "0", "x"])
 
 
 if __name__ == "__main__":

@@ -12,7 +12,13 @@ def truncate_text(text, max_chars=3000):
         return text[:half] + "\n\n...[TRUNCATED BY HARNESS TO SAVE MEMORY]...\n\n" + text[-half:]
     return text
 
-def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
+def run_agent_loop(
+    initial_prompt,
+    max_iterations=10,
+    max_memory_items=8,
+    model="qwen3.5:0.8b",
+    llm_api_base="http://localhost:11434",
+):
     print(f"\n[START] Agent initialized with prompt:\n> {initial_prompt}\n")
     
     # --- 1. INITIALIZE WORLD MODEL ---
@@ -37,7 +43,7 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
             ] + recent_context
         # -----------------------------------
         
-        response = call_ollama(messages)
+        response = call_ollama(messages, model=model, llm_api_base=llm_api_base)
         reasoning = response.get("thought_process", "No reasoning provided.")
         print(f"[REASONING]\n{reasoning}\n")
         
@@ -68,7 +74,12 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
             # -------------------------------
             
             # 4. CONTINUOUS LEARNING TRIGGER
-            reflect_on_trace(messages, initial_prompt, model="qwen3.5:0.8b")
+            reflect_on_trace(
+                messages,
+                initial_prompt,
+                model=model,
+                llm_api_base=llm_api_base,
+            )
             return final_ans
         # ------------------------------
             

@@ -5,7 +5,11 @@ import urllib.error
 
 KNOWLEDGE_FILE = "knowledge.json"
 DATASET_FILE = "dataset.jsonl"
-OLLAMA_URL = "http://localhost:11434/api/chat"
+DEFAULT_LLM_API_BASE = "http://localhost:11434"
+
+
+def chat_url(llm_api_base=DEFAULT_LLM_API_BASE):
+    return llm_api_base.rstrip("/") + "/api/chat"
 
 def load_knowledge():
     if not os.path.exists(KNOWLEDGE_FILE):
@@ -52,7 +56,12 @@ def export_trajectory_jsonl(messages):
     except Exception as e:
         print(f"[DATASET ERROR] Could not export trajectory: {e}")
 
-def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
+def reflect_on_trace(
+    messages,
+    original_prompt,
+    model="qwen3.5:0.8b",
+    llm_api_base=DEFAULT_LLM_API_BASE,
+):
     print("\n[REFLECTION PASS] Analyzing execution trace for capability growth...")
     
     trace_summary = []
@@ -81,7 +90,7 @@ def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
     }
     
     req = urllib.request.Request(
-        OLLAMA_URL, 
+        chat_url(llm_api_base),
         data=json.dumps(payload).encode('utf-8'),
         headers={'Content-Type': 'application/json'}
     )
