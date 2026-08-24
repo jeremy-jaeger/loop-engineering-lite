@@ -2,20 +2,24 @@
 
 ## Supported versions
 
-This project is pre-1.0. Security fixes land on `main` only.
+Fixes land on `main` only.
 
 ## What this software does
 
 The agent can **write files** and **run shell commands** inside a temporary
-sandbox, then **copy the sandbox state onto the host** when a task is marked
-complete (`VirtualFileSystem.commit_to_reality`). Treat every live run as
-untrusted code execution.
+sandbox, then **copy agent-touched files onto the host** when a
+pytest/unittest run in that sandbox exits 0
+(`VirtualFileSystem.commit_to_reality`). Treat every live run as untrusted
+code execution.
 
 ## Hardening you should assume
 
 - Commands run with `shell=True` in a temp directory. That is not a container.
-- Path handling is workspace-relative. Do not point `base_dir` at `/`.
-- Models hallucinate. The harness reduces damage; it does not eliminate it.
+- Paths are jailed to `--workspace`. Do not point it at `/`.
+- A passing test suite is not a proof of correctness and not a sandbox escape
+  prevention story. Models hallucinate tests too.
+- Inference failures must not commit. If you find a path that does, that is
+  a vulnerability.
 
 ## Reporting a vulnerability
 

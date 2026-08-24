@@ -1,17 +1,19 @@
 # ADR-005: Trajectory serialization for SFT
 
 **Date:** 2026-08-23  
-**Status:** Proposed pipeline (export exists, training does not)
+**Status:** Export implemented; training not vendored
 
 ## Context
 
 Prompt injection of heuristics does not change the base model. JSON schema
-errors repeat forever.
+errors repeat forever. Ungated export mixed failures into the SFT set.
 
 ## Decision
 
-- Export verified rollouts as JSONL (`dataset.jsonl` / `data/train.jsonl`).
-- Train LoRA offline (e.g. Apple MLX), fuse, load in Ollama.
+- Export verified rollouts as JSONL with `reward=1.0` (`dataset.jsonl`).
+- Export aborts as `reward=0.0` (`data/rejected.jsonl`).
+- Train LoRA offline (e.g. Apple MLX), fuse, load in Ollama via
+  `OLLAMA_MODEL`.
 
 ## Consequences
 

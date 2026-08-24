@@ -112,7 +112,9 @@ class VirtualFileSystem:
         """Last command must be a passing pytest/unittest (or test_*.py) run."""
         return self.verified_command() is not None
 
-    def simulate_command(self, command, timeout=10):
+    def simulate_command(self, command, timeout=None):
+        if timeout is None:
+            timeout = int(os.environ.get("LEL_SIM_TIMEOUT", "10"))
         temp_dir = tempfile.mkdtemp(prefix="agent_sim_")
         try:
             for rel_path, content in self.state.items():
