@@ -1,9 +1,11 @@
 import json
+import os
 from pyexpat.errors import messages
 import urllib.request
 import urllib.error
 from xml.parsers.expat import model
 from memory import load_knowledge
+from improve import config
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
@@ -34,7 +36,22 @@ RESPONSE_SCHEMA = {
     "required": ["thought_process", "status"]
 }
 
-def call_ollama(messages, model="qwen3.5:0.8b"):
+def resolve_ollama_model(default=None):
+    """Prefer a promoted adapter tag when the eval gate has written adapters/current.json."""
+    default = default or getattr(config, "DEFAULT_OLLAMA_MODEL", None) or config.DEFAULT_OLLAMA_MODEL
+    path = getattr(config, "CURRENT_ADAPTER", None) or config.CURRENT_ADAPTER
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                data = json.load(f)
+            if data.get("promoted") and data.get("ollama_model"):
+                return data["ollama_model"]
+        except Exception:
+            pass
+    return default
+
+def call_ollama(messages, model=None):
+    model = model or resolve_ollama_model()
     
     # Load past learnings dynamically
     past_learnings = load_knowledge()

@@ -142,3 +142,7 @@ def run_agent_loop(
     print("\n[ABORT] Maximum iterations reached without verified task completion.")
     _export_rejected(messages, initial_prompt, vfs)
     return None
+
+
+run_agent_loop = run_agent_loop
+run_agent_loop = run_agent_loop

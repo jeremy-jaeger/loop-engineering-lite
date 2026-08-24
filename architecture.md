@@ -73,7 +73,7 @@ Implement a persistent Reflection Layer. Upon successful task completion, the lo
 ## ADR-005: Trajectory Serialization for Supervised Fine-Tuning (SFT)
 
 **Date:** 2026-08-23
-**Status:** Partially implemented — JSONL export and `generate_dataset.sh` exist; MLX LoRA, DPO, and GGUF hot-swap do **not**
+**Status:** Implemented (2026-08-24) — reward-gated prepare, MLX LoRA train path, held-out eval, promote gate
 
 ### 1. Context
 The VFS integration (ADR-004) successfully filters hallucinated or buggy paths, ensuring that only verified execution traces (`Score: 1.0`) are committed to reality. However, relying purely on context-window injection for capability growth does not permanently alter the model's base distribution, leading to prompt bloat and static baseline intelligence.
@@ -83,9 +83,15 @@ The VFS integration (ADR-004) successfully filters hallucinated or buggy paths, 
 *   **Apple MLX Pipeline:** Utilize the `mlx-lm` framework to perform localized Low-Rank Adaptation (LoRA) on the M-series unified memory architecture. 
 *   **Hot-Swapping:** Fuse the trained adapters into a standard GGUF file format to be hot-swapped back into the local Ollama inference engine as an improved base checkpoint.
 
+**Implemented as `python3 -m improve {prepare,train,eval,promote}`:**
+1. `prepare` keeps only `reward==1.0` traces that include a `verified_command` and a tool call. Same-task failures become DPO pairs (`data/mlx/dpo.jsonl`).
+2. `train` runs `mlx_lm lora` + `fuse` on Apple Silicon. If MLX is absent it writes `adapters/train_spec.json` and **does not** pretend weights were updated. PEFT/CUDA is documented, not silently faked.
+3. `eval` scores a held-out TDD suite (`clamp` / `unique` / `anagram`) whose success metric is VFS pytest/unittest — never self-graded `complete`.
+4. `promote` writes `adapters/current.json` + `Modelfile` only when train status is a real adapter **and** held-out win_rate beats baseline by `PROMOTE_DELTA`. `llm_client` reads that file at inference.
+
 ### 3. Consequences
 *   **Positive:** The runtime achieves true, weight-based recursive self-improvement. The agent permanently learns the nuances of the JSON harness, reducing failed JSON decode errors and iteration loops over time.
-*   **Negative:** Requires periodic offline computation time (training runs). The loop must be paused while the new checkpoint is being fused and loaded.
+*   **Negative:** Requires periodic offline computation time (training runs). The loop must be paused while the new checkpoint is being fused and loaded. On machines without MLX, prepare still works; fuse/GGUF/Ollama create remains an operator step after `promote`.
 
 ---
 
@@ -96,17 +102,17 @@ What actually exists, versus what `goal.md` and `context_payload.md` claim:
 | Pillar | Claimed | In the repo today |
 |---|---|---|
 | World-model core | Compositional latent/symbolic WM with rollouts | In-memory file dict + tempdir `subprocess` (`vfs.py`). No latents, no progress head, no counterfactual API. |
-| Trajectory / self-improvement | Offline RL / DPO / MLX adapters | Heuristic dump to `knowledge.json` + append-only `dataset.jsonl`. No training loop, no adapter, no checkpoint swap. |
+| Trajectory / self-improvement | Offline RL / DPO / MLX adapters | Reward-gated JSONL + DPO pairs + MLX/PEFT train plan + eval/promote gate (`improve/`). Weights update only on Apple Silicon / PEFT hosts; this environment writes a plan. |
 | Harness | Drop-in adapters for other frameworks | Single Ollama JSON ReAct loop (`loop.py` + `main.py`). |
 | Verification / safety | Sandbox + consistency + HITL + rollback | Tempdir sim for `run_command`. Commit/export/reflect gated on last passing pytest/unittest (ADR-006). |
-| Benchmarks | Open long-horizon tasks with strict metrics | Five hardcoded TDD prompts in `generate_dataset.sh`. Generated artifacts (`stack.py`, `test_stack.py`) still fail TDD invariants the agent "learned." |
+| Benchmarks | Open long-horizon tasks with strict metrics | Held-out TDD suite in `improve/evaluate.py` (pytest/unittest only). `generate_dataset.sh` remains the train-set generator. |
 | Swarm | Parallel isolated VFS micro-agents | Sequential single process. |
 
 **Integrity bug (fixed by ADR-006):** the loop used to commit and export on model-declared `complete`, including via `len(messages) > 3`. That path is closed.
 
 ---
 
-## ADR-006: Gate Reality and Learning on Binary Verification (Next Stage)
+## ADR-006: Gate Reality and Learning on Binary Verification
 
 **Date:** 2026-08-24
 **Status:** Implemented (2026-08-24)
@@ -130,8 +136,37 @@ Out of scope for this stage: MLX/LoRA, GGUF fusion, swarm spawning, framework ad
 *   **Negative:** Many current loop exits will correctly become `[ABORT]` instead of fake success, so `generate_dataset.sh` will look "worse" until the agent actually passes tests. That is the intended signal.
 
 ### 4. Stage sequence after ADR-006
-1. **ADR-006 (now):** verification gate + reward-labeled trajectories + DPO reject set + scoped commits.
-2. **ADR-005 remainder:** offline adapter training (MLX/LoRA on Apple Silicon; document a non-Mac fallback). Hot-swap only adapters trained on `reward == 1.0` pairs.
-3. **Benchmark harness:** replace the bash task array with a scored suite (pytest exit codes as the only success metric; no self-graded `complete`).
-4. **Swarm composability:** N isolated VFS sandboxes / processes for sub-2B workers.
-5. **Harness adapters:** keep this loop as the core; add thin wrappers later — do not generalize before the reward is trustworthy.
+1. **ADR-006:** verification gate + reward-labeled trajectories + DPO reject set + scoped commits.
+2. **ADR-005:** offline adapter training + held-out eval + promote gate (implemented).
+3. **ADR-007 (next):** verifier-guided test-time search over forked VFS states — the lite-model capability multiplier.
+4. **Then:** parallel VFS swarm workers, then framework adapters.
+
+---
+
+## ADR-007: Verifier-Guided Test-Time Search (Next — top of lite-model loop engineering)
+
+**Date:** 2026-08-24
+**Status:** Accepted as next stage (not yet implemented)
+
+### 1. Context
+ADR-005 updates weights from verified traces. That mostly teaches a 0.8B–2B model the *harness* (JSON, pytest, TDD order). It does not buy much *solution search*. Sub-2B policies are weak one-shot TDD solvers; they become strong when a cheap, exact verifier scores many candidate rollouts — the same pattern as AlphaZero / Best-of-N / process-reward methods, except our world model is a copy-on-write file dict plus `python3 -m pytest` in a tempdir.
+
+That is the distinctive engineering feat for *this* repo: not a bigger LoRA, not a generic swarm wrapper, but making the VFS a first-class search substrate at inference time.
+
+### 2. Decision
+Implement **Best-of-N (then MCTS-lite) over forked VFS states**:
+
+1. **COW fork:** `VirtualFileSystem.fork()` copies `state`, `touched_paths`, and `command_history` without touching the host.
+2. **Branch at action time:** when the policy emits a `write_file` / `search_and_replace` / `run_command`, sample K candidates (temperature > 0). Apply each on a fork.
+3. **Score with the existing binary verifier:** run the task's test command via `simulate_command`. Keep argmax; discard losers.
+4. **Online DPO:** export (winner, loser) pairs for the same task prefix into `data/rejected.jsonl` / chosen JSONL so ADR-005 trains on *search leftovers*, not just full-episode outcomes.
+5. **Budget:** cap K and wall time so a swarm of 0.8B workers still fits in laptop RAM — search is the multiplier, not parameter count.
+
+Out of scope here: latent video world models, multi-framework adapters.
+
+### 3. Consequences
+*   **Positive:** A 0.8B model can beat a larger one-shot model on harnessed TDD because the loop, not the weights, does the search. Combined with ADR-005, format is learned in weights and solutions are found at test time. This is the actual "loop engineering" product.
+*   **Negative:** K rollouts multiply `simulate_command` cost. Requires a real `fork()` that does not leak forks into `commit_to_reality`.
+
+### 4. Why this sits above swarm
+Swarm (N isolated agents) is scale-out of the same one-shot policy. Test-time VFS search is scale-*in* intelligence per token. Do search first; then spawn many searchers.

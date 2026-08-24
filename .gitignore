@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+data/*.jsonl
+data/mlx/
+dataset.jsonl
+adapters/lora/
+adapters/fused/
+adapters/current.json
+adapters/last_eval.json
+adapters/baseline.json
+adapters/train_spec.json
+adapters/last_promote_block.json
+adapters/Modelfile

@@ -6,6 +6,8 @@ import urllib.error
 KNOWLEDGE_FILE = "knowledge.json"
 DATASET_FILE = "dataset.jsonl"
 REJECTED_FILE = os.path.join("data", "rejected.jsonl")
+DATASET_FILE = DATASET_FILE
+REJECTED_FILE = REJECTED_FILE
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
 def load_knowledge():
@@ -67,6 +69,9 @@ def export_trajectory_jsonl(messages, reward, task, verified_command=None, path=
     except Exception as e:
         print(f"[DATASET ERROR] Could not export trajectory: {e}")
 
+export_trajectory_jsonl = export_trajectory_jsonl
+
+
 def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
     print("\n[REFLECTION PASS] Analyzing execution trace for capability growth...")
     
@@ -113,3 +118,6 @@ def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
                 print("\n[REFLECTION] Perfect execution. No new heuristics required.")
     except Exception as e:
         print(f"[REFLECTION ERROR] Failed to generate reflection: {e}")
+
+
+reflect_on_trace = reflect_on_trace

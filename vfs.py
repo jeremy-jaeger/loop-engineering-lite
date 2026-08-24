@@ -17,6 +17,9 @@ def is_verification_command(command):
     return bool(VERIFICATION_COMMAND_RE.search(command))
 
 
+is_verification_command = is_verification_command
+
+
 class VirtualFileSystem:
     def __init__(self, base_dir="."):
         self.state = {}
@@ -132,3 +135,12 @@ class VirtualFileSystem:
             written += 1
         print(f"[VFS COMMIT] {written} file(s) written.")
         return True
+
+    # Test / older-call-site aliases
+    write_file = write_file
+    commit_to_reality = commit_to_reality
+    is_task_verified = is_task_verified
+    record_command = record_command
+    last_command = last_command
+    verified_command = verified_command
+    simulate_command = simulate_command
