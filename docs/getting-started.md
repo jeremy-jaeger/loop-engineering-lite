@@ -8,7 +8,7 @@
   Any Ollama chat model that honors JSON `format` will work if you change the
   `model=` argument.
 
-No pip packages are required to **run** the agent. `pytest` is only for unit tests.
+No pip packages are required to **run** the agent.
 
 ## Install
 
@@ -21,7 +21,7 @@ ollama pull qwen3.5:0.8b
 Optional editable install (exposes the `agent-loop` console script):
 
 ```bash
-python3 -m pip install -e ".[dev]"
+python3 -m pip install -e .
 ```
 
 ## First run (safe)
@@ -42,7 +42,7 @@ from pytest, then either a commit + optional reflection, or an abort at
 ## CLI
 
 ```bash
-python3 main.py "Build a Temperature class in temp.py with Celsius in, Fahrenheit out."
+python3 main.py "Build a Temperature class with Celsius in, Fahrenheit out."
 # or, after pip install -e .
 agent-loop "List files, then summarize what this folder contains."
 ```
@@ -52,16 +52,13 @@ Arguments are joined into one prompt. Default cap is 10 iterations
 
 ## Without a model
 
-The VFS and tools are ordinary Python. Unit tests cover them:
+The VFS and tools are ordinary Python. There is a no-Ollama walkthrough in
+[examples/offline_vfs_demo.py](../examples/offline_vfs_demo.py):
 
 ```bash
 cd loop-engineering-lite
-python3 -m pip install -e ".[dev]"
-python3 -m pytest -q
+python3 examples/offline_vfs_demo.py
 ```
-
-There is also a no-Ollama walkthrough in
-[examples/offline_vfs_demo.py](../examples/offline_vfs_demo.py).
 
 ## Batch trajectories
 

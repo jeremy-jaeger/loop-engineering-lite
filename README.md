@@ -44,14 +44,6 @@ We keep those two documents separate on purpose.
 
 ## See it
 
-<!-- pulse:start -->
-<p align="center">
-  <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
-</p>
-
-<p align="center"><sub>CI last redrew this README 2026-08-24 07:43 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 2 open issues/PRs, 1 listed contributors (<code>jeremy-jaeger</code>). History just started — this is sample zero of the sparkline. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
-<!-- pulse:end -->
-
 <p align="center">
   <img src="docs/assets/terminal-demo.svg" alt="Example terminal session of a verified TDD loop" width="920">
 </p>
@@ -94,12 +86,10 @@ python3 /path/to/loop-engineering-lite/main.py \
   "Use TDD to write is_palindrome(s) in str_utils.py. Test racecar, hello, and ''."
 ```
 
-Unit tests (no model, no network):
+Offline demo (no model, no network):
 
 ```bash
 cd loop-engineering-lite
-python3 -m pip install -e ".[dev]"
-python3 -m pytest -q
 python3 examples/offline_vfs_demo.py
 ```
 
@@ -129,8 +119,7 @@ memory.py          knowledge.json + dataset.jsonl
 knowledge.json     surviving lessons from past runs
 docs/              architecture, ADRs, FAQ, graphics
 examples/          prompts, offline demo, prior TDD artifacts
-scripts/           dataset batch + live pulse graphic
-tests/             stdlib tests
+scripts/           dataset batch generator
 ```
 
 ## Tools the model is allowed to call
@@ -161,8 +150,8 @@ want a pile of verified TDD traces for LoRA.
 ## Status
 
 **v0.1.0 alpha.** The loop, VFS, tools, truncation, reflection, and export are
-real and tested at the unit level. Live quality depends entirely on the local
-model. Fine-tuning, swarm spawn, and a general video/action world model are
+real. Live quality depends entirely on the local model. Fine-tuning, swarm
+spawn, and a general video/action world model are
 [roadmap language](docs/NORTH_STAR.md), not checkboxes.
 
 ## Contributing
@@ -170,10 +159,6 @@ model. Fine-tuning, swarm spawn, and a general video/action world model are
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md). Bug reports want a prompt and a log;
 see the issue templates.
-
-```bash
-python3 -m pytest -q
-```
 
 ## Cite
 

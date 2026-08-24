@@ -16,8 +16,7 @@ and this project uses [Semantic Versioning](https://semver.org/).
 - Reflection pass that appends heuristics to `knowledge.json`
 - ShareGPT-style trajectory export to `dataset.jsonl`
 - Batch TDD dataset generator (`scripts/generate_dataset.sh`)
-- Public-repo docs, examples, diagrams, and stdlib unit tests
-- Self-updating pulse: CI redraws generative art, appends daily star history, and patches README.md between `pulse:` markers
+- Public-repo docs, examples, and diagrams
 
 ### Known limits
 
