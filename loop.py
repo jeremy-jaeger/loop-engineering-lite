@@ -129,10 +129,16 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
                 )
             elif "[SIMULATION FAILED]" in safe_observation:
                 print("[HARNESS INTERVENTION] Failed simulation — steer toward a fix cycle.")
-                observation_msg += (
+                extra = (
                     "\n\n[SYSTEM NOTE: Tests failed. Read the failing file(s), fix the "
                     "implementation or missing imports with write_file, then re-run pytest.]"
                 )
+                if "no tests ran" in safe_observation.lower():
+                    extra += (
+                        " Pytest collected zero tests — rewrite test_*.py using "
+                        "`def test_...():` functions with asserts inside, not bare asserts."
+                    )
+                observation_msg += extra
 
             messages.append({"role": "user", "content": observation_msg})
             

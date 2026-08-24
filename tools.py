@@ -15,9 +15,34 @@ def read_file(vfs, filepath):
     lines = content.split('\n')
     return "".join([f"{i+1} | {line}\n" for i, line in enumerate(lines)])
 
+def _normalize_written_content(content):
+    """Repair common local-LLM write_file artifacts."""
+    if not isinstance(content, str):
+        content = "" if content is None else str(content)
+    # Double-escaped newlines: entire file arrives as one physical line with \n.
+    if "\\n" in content and "\n" not in content:
+        content = (
+            content.replace("\\n", "\n")
+            .replace("\\t", "\t")
+            .replace("\\'", "'")
+            .replace('\\"', '"')
+        )
+    # Trailing JSON-brace leakage after a complete statement (e.g. "...'-')}}}").
+    stripped = content.rstrip()
+    while len(stripped) > 1 and stripped.endswith("}"):
+        prev = stripped[:-1].rstrip()
+        if prev.endswith(("'", '"', ")", "]")):
+            stripped = prev
+            continue
+        break
+    if stripped != content.rstrip():
+        content = stripped + ("\n" if content.endswith("\n") else "")
+    return content
+
+
 def write_file(vfs, filepath, content):
     """Writes directly to the VFS dictionary."""
-    return vfs.write_file(filepath, content)
+    return vfs.write_file(filepath, _normalize_written_content(content))
 
 def search_and_replace(vfs, filepath, old_code, new_code):
     """Performs a surgical edit on a file living in the VFS dictionary."""
