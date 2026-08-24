@@ -15,13 +15,13 @@ git clone https://github.com/jeremy-jaeger/loop-engineering-lite.git
 cd loop-engineering-lite
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -e .
 ```
 
-You do **not** need Ollama for unit tests:
+You do **not** need Ollama for the offline VFS demo:
 
 ```bash
-python -m pytest -q
+python examples/offline_vfs_demo.py
 ```
 
 You **do** need [Ollama](https://ollama.com) for a live loop:
@@ -37,9 +37,7 @@ Prefer running live demos from an empty directory so `commit_to_reality` cannot 
 
 - Harness interventions that catch real model failure modes
 - Stronger sandboxing and clearer verification signals
-- Tests that do not require a GPU or a network model
 - Honest docs when a feature is aspirational vs implemented
-- The live pulse SVG (`make pulse`) if you change `scripts/generate_pulse.py`
 
 ## What we will bounce
 

@@ -32,9 +32,6 @@ classifiers = [
 ]
 dependencies = []
 
-[project.optional-dependencies]
-dev = ["pytest>=7.0"]
-
 [project.urls]
 Homepage = "https://github.com/jeremy-jaeger/loop-engineering-lite"
 Issues = "https://github.com/jeremy-jaeger/loop-engineering-lite/issues"
@@ -45,7 +42,3 @@ agent-loop = "main:cli_entry"
 
 [tool.setuptools]
 py-modules = ["main", "loop", "llm_client", "tools", "memory", "vfs"]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-pythonpath = ["."]

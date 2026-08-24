@@ -40,6 +40,17 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
         response = call_ollama(messages)
         reasoning = response.get("thought_process", "No reasoning provided.")
         print(f"[REASONING]\n{reasoning}\n")
+
+        if response.get("_inference_error"):
+            print("[HARNESS INTERVENTION] Inference error — retry without committing.")
+            messages.append({
+                "role": "user",
+                "content": (
+                    "Error: The previous model response was invalid JSON / inference failed. "
+                    "Respond again with a single valid JSON object and continue the task."
+                ),
+            })
+            continue
         
         # --- SMART COMPLETION CHECK ---
         if response.get("status") == "complete":
@@ -57,6 +68,23 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
                         "content": "Error: You marked status as 'complete' but did not provide a 'final_answer' or perform any actions."
                     })
                     continue
+
+            # Only commit when the world model actually verified a successful simulation.
+            verified = any(
+                "[SIMULATION VERIFIED SUCCESS]" in (m.get("content") or "")
+                for m in messages
+                if m.get("role") == "user"
+            )
+            if not verified:
+                print("[HARNESS INTERVENTION] Refusing complete without a verified simulation. Forcing retry...")
+                messages.append({
+                    "role": "user",
+                    "content": (
+                        "Error: status 'complete' is only allowed after a tool observation "
+                        "containing [SIMULATION VERIFIED SUCCESS]. Fix the code, re-run pytest, then complete."
+                    ),
+                })
+                continue
 
             print(f"[SUCCESS - TASK COMPLETE]\nFinal Answer: {final_ans}\n")
             
@@ -90,7 +118,29 @@ def run_agent_loop(initial_prompt, max_iterations=10, max_memory_items=8):
             print(f"[OBSERVATION]\n{safe_observation}\n")
             
             messages.append({"role": "assistant", "content": json.dumps(response)})
-            messages.append({"role": "user", "content": f"Observation from {tool_name}: {safe_observation}"})
+            observation_msg = f"Observation from {tool_name}: {safe_observation}"
+
+            # Nudge the model out of common local-LLM failure loops.
+            if "old_code` block not found" in safe_observation:
+                print("[HARNESS INTERVENTION] search_and_replace miss — steer toward read+write.")
+                observation_msg += (
+                    "\n\n[SYSTEM NOTE: Stop retrying search_and_replace. "
+                    "Call read_file on that path, then write_file with the full corrected file.]"
+                )
+            elif "[SIMULATION FAILED]" in safe_observation:
+                print("[HARNESS INTERVENTION] Failed simulation — steer toward a fix cycle.")
+                extra = (
+                    "\n\n[SYSTEM NOTE: Tests failed. Read the failing file(s), fix the "
+                    "implementation or missing imports with write_file, then re-run pytest.]"
+                )
+                if "no tests ran" in safe_observation.lower():
+                    extra += (
+                        " Pytest collected zero tests — rewrite test_*.py using "
+                        "`def test_...():` functions with asserts inside, not bare asserts."
+                    )
+                observation_msg += extra
+
+            messages.append({"role": "user", "content": observation_msg})
             
         else:
             print("[HARNESS INTERVENTION] No tool call specified while in progress.")

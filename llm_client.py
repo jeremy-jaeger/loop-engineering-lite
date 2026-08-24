@@ -84,4 +84,11 @@ def call_ollama(messages, model="qwen3.5:0.8b"):
             
     except Exception as e:
         print(f"\n[ERROR] Inference failed: {e}")
-        return {"status": "complete", "final_answer": "Execution failed."}
+        # Never mark complete on inference failure — that would trigger a VFS commit.
+        return {
+            "thought_process": f"Inference failed: {e}",
+            "status": "in_progress",
+            "tool_call": None,
+            "final_answer": None,
+            "_inference_error": True,
+        }

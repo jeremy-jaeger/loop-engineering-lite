@@ -2,6 +2,19 @@
 
 Run from an **empty working directory**. Quote the whole task.
 
+## Real-world (checkout money)
+
+```text
+Use TDD to write dollars_to_cents(text) in money.py for a checkout form.
+Accept '$12.34', '12.34', and '10'. Return int cents (1234, 1234, 1000).
+Raise ValueError for negatives, empty strings, or malformed input.
+Write tests in test_money.py using from money import dollars_to_cents
+and def test_... functions. Use python3 -m pytest -q.
+Do not mark complete until tests pass.
+```
+
+Full write-up: [real_world/checkout_money.md](../real_world/checkout_money.md).
+
 ## Tiny TDD (best fit)
 
 ```text

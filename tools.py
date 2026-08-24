@@ -15,9 +15,30 @@ def read_file(vfs, filepath):
     lines = content.split('\n')
     return "".join([f"{i+1} | {line}\n" for i, line in enumerate(lines)])
 
+def _normalize_written_content(content):
+    """Repair common local-LLM write_file artifacts."""
+    import re as _re
+
+    if not isinstance(content, str):
+        content = "" if content is None else str(content)
+    # Double-escaped newlines: entire file arrives as one physical line with \n.
+    if "\\n" in content and "\n" not in content:
+        content = (
+            content.replace("\\n", "\n")
+            .replace("\\t", "\t")
+            .replace("\\'", "'")
+            .replace('\\"', '"')
+        )
+    # Trailing JSON-brace leakage after a complete statement (e.g. "...'-')}}}").
+    cleaned = _re.sub(r'''(['")])\}+\s*$''', r"\1", content.rstrip())
+    if cleaned != content.rstrip():
+        content = cleaned + ("\n" if content.endswith("\n") else "")
+    return content
+
+
 def write_file(vfs, filepath, content):
     """Writes directly to the VFS dictionary."""
-    return vfs.write_file(filepath, content)
+    return vfs.write_file(filepath, _normalize_written_content(content))
 
 def search_and_replace(vfs, filepath, old_code, new_code):
     """Performs a surgical edit on a file living in the VFS dictionary."""
@@ -26,7 +47,11 @@ def search_and_replace(vfs, filepath, old_code, new_code):
         return content
         
     if old_code not in content:
-        return "Error: `old_code` block not found exactly as written. Ensure indentation matches."
+        return (
+            "Error: `old_code` block not found exactly as written. "
+            "Ensure indentation matches. Prefer `read_file` then full "
+            "`write_file` rewrite instead of retrying `search_and_replace`."
+        )
         
     new_content = content.replace(old_code, new_code)
     return vfs.write_file(filepath, new_content)

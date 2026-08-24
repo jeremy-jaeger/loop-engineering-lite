@@ -56,5 +56,4 @@ knowledge.json          surviving heuristics
 scripts/generate_dataset.sh
 examples/               prompts and prior TDD artifacts
 docs/                   this guide, ADRs, assets
-tests/                  stdlib tests (no Ollama)
 ```
