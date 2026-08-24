@@ -14,10 +14,13 @@ for task in "${tasks[@]}"; do
   echo "-----------------------------------"
   echo "Running Task: $task"
   
+  mkdir -p data
+
   # Use python3 main.py to bypass virtual environment PATH issues in bash
   python3 main.py "$task"
   
-  # Safety check: Only append and clean up if the file was successfully created
+  # Only verified (reward=1.0) traces land in dataset.jsonl after ADR-006.
+  # Unverified runs are appended to data/rejected.jsonl by the loop itself.
   if [ -f dataset.jsonl ]; then
     cat dataset.jsonl >> data/train.jsonl
     rm dataset.jsonl

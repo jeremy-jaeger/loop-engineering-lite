@@ -98,20 +98,18 @@ What actually exists, versus what `goal.md` and `context_payload.md` claim:
 | World-model core | Compositional latent/symbolic WM with rollouts | In-memory file dict + tempdir `subprocess` (`vfs.py`). No latents, no progress head, no counterfactual API. |
 | Trajectory / self-improvement | Offline RL / DPO / MLX adapters | Heuristic dump to `knowledge.json` + append-only `dataset.jsonl`. No training loop, no adapter, no checkpoint swap. |
 | Harness | Drop-in adapters for other frameworks | Single Ollama JSON ReAct loop (`loop.py` + `main.py`). |
-| Verification / safety | Sandbox + consistency + HITL + rollback | Tempdir sim for `run_command` only. `commit_to_reality()` writes **every** VFS file on model-declared `complete`. |
+| Verification / safety | Sandbox + consistency + HITL + rollback | Tempdir sim for `run_command`. Commit/export/reflect gated on last passing pytest/unittest (ADR-006). |
 | Benchmarks | Open long-horizon tasks with strict metrics | Five hardcoded TDD prompts in `generate_dataset.sh`. Generated artifacts (`stack.py`, `test_stack.py`) still fail TDD invariants the agent "learned." |
 | Swarm | Parallel isolated VFS micro-agents | Sequential single process. |
 
-**Critical integrity bug:** `loop.py` commits and exports whenever the model sets `status: complete`. The "forgiving finish line" will even invent a success if `len(messages) > 3` **or** the last observation contains `[SIMULATION VERIFIED SUCCESS]`. Failed simulations, untested writes, and host-repo files loaded by `_load_substrate()` are all eligible for disk commit. `export_trajectory_jsonl` does not store a reward. Reflection then writes lessons from unverified traces.
-
-That is why ADR-005 must not be the next code stage: training on this dataset would distill *claimed* completion, not *verified* capability.
+**Integrity bug (fixed by ADR-006):** the loop used to commit and export on model-declared `complete`, including via `len(messages) > 3`. That path is closed.
 
 ---
 
 ## ADR-006: Gate Reality and Learning on Binary Verification (Next Stage)
 
 **Date:** 2026-08-24
-**Status:** Accepted as next stage (not yet implemented)
+**Status:** Implemented (2026-08-24)
 
 ### 1. Context
 `goal.md` states that verification is the crux of self-improvement: without a cheap, truthful signal that a trajectory improved capability, the rest of the flywheel is RAG-over-transcripts. The VFS already produces a binary score (`1.0` / `0.0`) per `simulate_command`, but the runtime does not treat that score as the commit/export/reflect gate. Until it does, ADR-004 heuristics and ADR-005 JSONL are not "verifiable capability growth."

@@ -53,7 +53,7 @@ def call_ollama(messages, model="qwen3.5:0.8b"):
             "- You MUST respond with a single, valid JSON object. No Markdown, no conversational text.\n"
             "- Your JSON MUST contain these exact keys: 'thought_process' (string), 'status' (string), and 'tool_call' (object).\n"
             "- Set 'status' to 'in_progress' when using a tool.\n"
-            "- Set 'status' to 'complete' ONLY when the task is verified.\n"
+            "- Set 'status' to 'complete' ONLY after a passing verification command (`python3 -m pytest` or `python3 -m unittest`) returned [SIMULATION VERIFIED SUCCESS].\n"
             "- The 'tool_call' object MUST contain 'name' (string) and 'args' (object of key-value pairs).\n"
             "- ENVIRONMENT GROUNDING: You are running on macOS. You MUST use `python3` and `python3 -m pytest`. NEVER use `python`, `pip`, or `apt`."
             f"{past_learnings}"
