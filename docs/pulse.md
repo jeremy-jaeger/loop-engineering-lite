@@ -6,18 +6,18 @@ and the marked section of `README.md` from the public GitHub API.
 We do **not** call an LLM to invent marketing copy. The runner has no model,
 and a model that can rewrite the README is a gift to prompt injection.
 
-Last draw: `2026-08-24 07:39 UTC` · source `jeremy-jaeger/loop-engineering-lite` · API `ok`
+Last draw: `2026-08-24 07:43 UTC` · source `jeremy-jaeger/loop-engineering-lite` · API `ok`
 
-CI last redrew this README **2026-08-24 07:39 UTC**. Live totals: **0** stars, **0** forks, **0** watchers, **3** open issues/PRs, **1** listed contributors (`jeremy-jaeger`). History just started — this is sample zero of the sparkline. The particle field and sparkline are generated from those numbers ([how](scripts/generate_pulse.py)).
+CI last redrew this README **2026-08-24 07:43 UTC**. Live totals: **0** stars, **0** forks, **0** watchers, **2** open issues/PRs, **1** listed contributors (`jeremy-jaeger`). History just started — this is sample zero of the sparkline. The particle field and sparkline are generated from those numbers ([how](scripts/generate_pulse.py)).
 
 | Metric | Value |
 | --- | ---: |
 | Stars | 0 |
 | Forks | 0 |
 | Watchers | 0 |
-| Open issues + PRs | 3 |
+| Open issues + PRs | 2 |
 | Contributors (sample) | jeremy-jaeger |
-| Tip SHA | `42b94ea` |
+| Tip SHA | `ba13e50` |
 | History samples | 1 |
 
 GitHub description at draw time:
@@ -28,6 +28,6 @@ GitHub description at draw time:
 
 | Date (UTC) | Stars | Forks | Watch | Issues |
 | --- | ---: | ---: | ---: | ---: |
-| 2026-08-24 | 0 | 0 | 0 | 3 |
+| 2026-08-24 | 0 | 0 | 0 | 2 |
 
 ![pulse](assets/pulse.svg)
