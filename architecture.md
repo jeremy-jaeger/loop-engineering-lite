@@ -59,7 +59,7 @@ As the agent engages in extended multi-step tasks (like scaffolding projects or 
 ## ADR-004: Implementation of Trajectory Abstraction (Experience Replay)
 
 **Date:** 2026-08-23
-**Status:** Proposed
+**Status:** Accepted (implemented in `memory.py` / `knowledge.json`; effectiveness not yet verified)
 
 ### 1. Context
 While the agent successfully performs autonomous Self-Healing TDD, it suffers from terminal amnesia. Successful debugging trajectories are discarded upon process exit, meaning the runtime does not demonstrate verifiable capability growth over time. 
@@ -73,7 +73,7 @@ Implement a persistent Reflection Layer. Upon successful task completion, the lo
 ## ADR-005: Trajectory Serialization for Supervised Fine-Tuning (SFT)
 
 **Date:** 2026-08-23
-**Status:** Proposed Pipeline
+**Status:** Partially implemented — JSONL export and `generate_dataset.sh` exist; MLX LoRA, DPO, and GGUF hot-swap do **not**
 
 ### 1. Context
 The VFS integration (ADR-004) successfully filters hallucinated or buggy paths, ensuring that only verified execution traces (`Score: 1.0`) are committed to reality. However, relying purely on context-window injection for capability growth does not permanently alter the model's base distribution, leading to prompt bloat and static baseline intelligence.
@@ -86,3 +86,54 @@ The VFS integration (ADR-004) successfully filters hallucinated or buggy paths, 
 ### 3. Consequences
 *   **Positive:** The runtime achieves true, weight-based recursive self-improvement. The agent permanently learns the nuances of the JSON harness, reducing failed JSON decode errors and iteration loops over time.
 *   **Negative:** Requires periodic offline computation time (training runs). The loop must be paused while the new checkpoint is being fused and loaded.
+
+---
+
+## Current-state audit (2026-08-24)
+
+What actually exists, versus what `goal.md` and `context_payload.md` claim:
+
+| Pillar | Claimed | In the repo today |
+|---|---|---|
+| World-model core | Compositional latent/symbolic WM with rollouts | In-memory file dict + tempdir `subprocess` (`vfs.py`). No latents, no progress head, no counterfactual API. |
+| Trajectory / self-improvement | Offline RL / DPO / MLX adapters | Heuristic dump to `knowledge.json` + append-only `dataset.jsonl`. No training loop, no adapter, no checkpoint swap. |
+| Harness | Drop-in adapters for other frameworks | Single Ollama JSON ReAct loop (`loop.py` + `main.py`). |
+| Verification / safety | Sandbox + consistency + HITL + rollback | Tempdir sim for `run_command` only. `commit_to_reality()` writes **every** VFS file on model-declared `complete`. |
+| Benchmarks | Open long-horizon tasks with strict metrics | Five hardcoded TDD prompts in `generate_dataset.sh`. Generated artifacts (`stack.py`, `test_stack.py`) still fail TDD invariants the agent "learned." |
+| Swarm | Parallel isolated VFS micro-agents | Sequential single process. |
+
+**Critical integrity bug:** `loop.py` commits and exports whenever the model sets `status: complete`. The "forgiving finish line" will even invent a success if `len(messages) > 3` **or** the last observation contains `[SIMULATION VERIFIED SUCCESS]`. Failed simulations, untested writes, and host-repo files loaded by `_load_substrate()` are all eligible for disk commit. `export_trajectory_jsonl` does not store a reward. Reflection then writes lessons from unverified traces.
+
+That is why ADR-005 must not be the next code stage: training on this dataset would distill *claimed* completion, not *verified* capability.
+
+---
+
+## ADR-006: Gate Reality and Learning on Binary Verification (Next Stage)
+
+**Date:** 2026-08-24
+**Status:** Accepted as next stage (not yet implemented)
+
+### 1. Context
+`goal.md` states that verification is the crux of self-improvement: without a cheap, truthful signal that a trajectory improved capability, the rest of the flywheel is RAG-over-transcripts. The VFS already produces a binary score (`1.0` / `0.0`) per `simulate_command`, but the runtime does not treat that score as the commit/export/reflect gate. Until it does, ADR-004 heuristics and ADR-005 JSONL are not "verifiable capability growth."
+
+### 2. Decision
+Implement **verified-success gating** as a first-class loop invariant before any weight-training work:
+
+1. **Do not `commit_to_reality` unless** the current VFS rollout has at least one `[SIMULATION VERIFIED SUCCESS]` **and** the last `run_command` (if any) did not fail. Prefer: last verification command is the task's test command (`python3 -m pytest …`) with score `1.0`.
+2. **Do not `export_trajectory_jsonl` or `reflect_on_trace` on unverified completions.** Export a structured record: `{messages, reward, task, verified_command}` with `reward ∈ {0.0, 1.0}`.
+3. **Narrow the forgiving finish line.** Empty `final_answer` may be filled in only when the last observation is verified success — never via `len(messages) > 3`.
+4. **Commit only agent-touched paths**, not the entire `_load_substrate()` snapshot (avoids rewriting unrelated repo files).
+5. **Capture rejected traces** (score `0.0` at max iterations or failed final tests) into a paired DPO/preference file (`data/rejected.jsonl`), so the next stage after this one can train DPO instead of SFT-on-successes-only.
+
+Out of scope for this stage: MLX/LoRA, GGUF fusion, swarm spawning, framework adapters, latent world models.
+
+### 3. Consequences
+*   **Positive:** The dataset and `knowledge.json` become honest. Failed TDD runs stop polluting the host tree. ADR-005 (weight updates) and DPO become possible without poisoning the base model. This is the smallest change that makes the North Star's "verifiable" clause true.
+*   **Negative:** Many current loop exits will correctly become `[ABORT]` instead of fake success, so `generate_dataset.sh` will look "worse" until the agent actually passes tests. That is the intended signal.
+
+### 4. Stage sequence after ADR-006
+1. **ADR-006 (now):** verification gate + reward-labeled trajectories + DPO reject set + scoped commits.
+2. **ADR-005 remainder:** offline adapter training (MLX/LoRA on Apple Silicon; document a non-Mac fallback). Hot-swap only adapters trained on `reward == 1.0` pairs.
+3. **Benchmark harness:** replace the bash task array with a scored suite (pytest exit codes as the only success metric; no self-graded `complete`).
+4. **Swarm composability:** N isolated VFS sandboxes / processes for sub-2B workers.
+5. **Harness adapters:** keep this loop as the core; add thin wrappers later — do not generalize before the reward is trustworthy.
