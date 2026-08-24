@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "loop-engineering-lite"
-version = "0.1.0"
-description = "Local agent harness: sandboxed VFS world model, verified commits, trajectory export."
+version = "0.2.0"
+description = "Local agent harness: sandboxed VFS, verification-gated commits, trajectory export."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
@@ -49,3 +49,4 @@ py-modules = ["main", "loop", "llm_client", "tools", "memory", "vfs"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = "-q"

@@ -1,3 +1,1 @@
-# Tests for Loop Engineering Lite
-# Run with: python -m pytest -q
-# These tests never call Ollama.
+# Tests for the harness. They never call Ollama.
