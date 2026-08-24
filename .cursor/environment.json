@@ -1,0 +1,10 @@
+{
+  "name": "loop-engineering-lite",
+  "install": "bash .cursor/install.sh",
+  "terminals": [
+    {
+      "name": "ollama",
+      "command": "ollama serve"
+    }
+  ]
+}
