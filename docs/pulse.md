@@ -6,9 +6,9 @@ and the marked section of `README.md` from the public GitHub API.
 We do **not** call an LLM to invent marketing copy. The runner has no model,
 and a model that can rewrite the README is a gift to prompt injection.
 
-Last draw: `2026-08-26 08:02 UTC` · source `jeremy-jaeger/loop-engineering-lite` · API `ok`
+Last draw: `2026-08-27 18:18 UTC` · source `jeremy-jaeger/loop-engineering-lite` · API `ok`
 
-CI last redrew this README **2026-08-26 08:02 UTC**. Live totals: **0** stars, **0** forks, **0** watchers, **7** open issues/PRs, **2** listed contributors (`cursoragent`, `jeremy-jaeger`). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers ([how](scripts/generate_pulse.py)).
+CI last redrew this README **2026-08-27 18:18 UTC**. Live totals: **0** stars, **0** forks, **0** watchers, **7** open issues/PRs, **2** listed contributors (`cursoragent`, `jeremy-jaeger`). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers ([how](scripts/generate_pulse.py)).
 
 | Metric | Value |
 | --- | ---: |
@@ -17,8 +17,8 @@ CI last redrew this README **2026-08-26 08:02 UTC**. Live totals: **0** stars, *
 | Watchers | 0 |
 | Open issues + PRs | 7 |
 | Contributors (sample) | cursoragent, jeremy-jaeger |
-| Tip SHA | `fdabfe0` |
-| History samples | 3 |
+| Tip SHA | `0b9188f` |
+| History samples | 4 |
 
 GitHub description at draw time:
 
@@ -31,5 +31,6 @@ GitHub description at draw time:
 | 2026-08-24 | 0 | 0 | 0 | 2 |
 | 2026-08-25 | 0 | 0 | 0 | 6 |
 | 2026-08-26 | 0 | 0 | 0 | 7 |
+| 2026-08-27 | 0 | 0 | 0 | 7 |
 
 ![pulse](assets/pulse.svg)
