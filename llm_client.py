@@ -1,7 +1,9 @@
 import json
+import os
 import urllib.request
 import urllib.error
 from memory import load_knowledge
+from improve import config
 
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
@@ -32,7 +34,22 @@ RESPONSE_SCHEMA = {
     "required": ["thought_process", "status"]
 }
 
-def call_ollama(messages, model="qwen3.5:0.8b"):
+def resolve_ollama_model(default=None):
+    """Prefer a promoted adapter tag when the eval gate has written adapters/current.json."""
+    default = default or getattr(config, "DEFAULT_OLLAMA_MODEL", None) or config.DEFAULT_OLLAMA_MODEL
+    path = getattr(config, "CURRENT_ADAPTER", None) or config.CURRENT_ADAPTER
+    if os.path.exists(path):
+        try:
+            with open(path) as f:
+                data = json.load(f)
+            if data.get("promoted") and data.get("ollama_model"):
+                return data["ollama_model"]
+        except Exception:
+            pass
+    return default
+
+def call_ollama(messages, model=None):
+    model = model or resolve_ollama_model()
     
     # Load past learnings dynamically
     past_learnings = load_knowledge()
@@ -51,7 +68,7 @@ def call_ollama(messages, model="qwen3.5:0.8b"):
             "- You MUST respond with a single, valid JSON object. No Markdown, no conversational text.\n"
             "- Your JSON MUST contain these exact keys: 'thought_process' (string), 'status' (string), and 'tool_call' (object).\n"
             "- Set 'status' to 'in_progress' when using a tool.\n"
-            "- Set 'status' to 'complete' ONLY when the task is verified.\n"
+            "- Set 'status' to 'complete' ONLY after a passing verification command (`python3 -m pytest` or `python3 -m unittest`) returned [SIMULATION VERIFIED SUCCESS].\n"
             "- The 'tool_call' object MUST contain 'name' (string) and 'args' (object of key-value pairs).\n"
             "- ENVIRONMENT GROUNDING: You are running on macOS. You MUST use `python3` and `python3 -m pytest`. NEVER use `python`, `pip`, or `apt`."
             f"{past_learnings}"
@@ -85,3 +102,7 @@ def call_ollama(messages, model="qwen3.5:0.8b"):
     except Exception as e:
         print(f"\n[ERROR] Inference failed: {e}")
         return {"status": "complete", "final_answer": "Execution failed."}
+
+
+call_ollama = call_ollama
+call_ollama = call_ollama

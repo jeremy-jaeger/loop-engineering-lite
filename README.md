@@ -42,6 +42,24 @@ required) that:
 That is the whole product. The [north star](docs/NORTH_STAR.md) is larger.
 We keep those two documents separate on purpose.
 
+
+## Loop contract on this branch
+
+These are runtime facts, not roadmap:
+
+- **`complete` without a passing pytest/unittest does not commit.** The old `len(messages) > 3` shortcut is gone (ADR-006).
+- **`search_width>1` forks the VFS**, scores candidate tool calls with the test command, and adopts the winner (ADR-007). `fork()` never writes the host.
+- **Weight flywheel:** `python3 -m improve prepare|train|eval|promote` trains only on `reward==1.0` traces. Without MLX it writes `adapters/train_spec.json` instead of pretending weights moved.
+
+```bash
+python3 main.py "Use TDD to write clamp(x, lo, hi) with tests."
+python3 -c "from loop import run_agent_loop; run_agent_loop('...', search_width=3, verify_command='python3 -m pytest -q')"
+./scripts/generate_dataset.sh
+python3 -m improve prepare --chosen dataset.jsonl --rejected data/rejected.jsonl
+python3 -m pytest -q
+```
+
+
 ## See it
 
 <!-- pulse:start -->
@@ -130,7 +148,10 @@ knowledge.json     surviving lessons from past runs
 docs/              architecture, ADRs, FAQ, graphics
 examples/          prompts, offline demo, prior TDD artifacts
 scripts/           dataset batch + live pulse graphic
-tests/             stdlib tests
+improve/           prepare / train / eval / promote flywheel
+search.py          Best-of-N over VFS forks
+world_model.py     fork / rollout / value API
+tests/             stdlib tests plus ADR regression tests
 ```
 
 ## Tools the model is allowed to call
@@ -162,8 +183,7 @@ want a pile of verified TDD traces for LoRA.
 
 **v0.1.0 alpha.** The loop, VFS, tools, truncation, reflection, and export are
 real and tested at the unit level. Live quality depends entirely on the local
-model. Fine-tuning, swarm spawn, and a general video/action world model are
-[roadmap language](docs/NORTH_STAR.md), not checkboxes.
+model. Adapter training (`improve/`) and verifier-guided search (`search_width`) are implemented on this branch. Swarm spawn and a general video/action world model remain [roadmap language](docs/NORTH_STAR.md).
 
 ## Contributing
 

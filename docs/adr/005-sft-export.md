@@ -1,7 +1,7 @@
 # ADR-005: Trajectory serialization for SFT
 
 **Date:** 2026-08-23  
-**Status:** Proposed pipeline (export exists, training does not)
+**Status:** Implemented (`python3 -m improve prepare|train|eval|promote`)
 
 ## Context
 

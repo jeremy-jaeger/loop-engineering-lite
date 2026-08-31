@@ -44,7 +44,8 @@ Changelog = "https://github.com/jeremy-jaeger/loop-engineering-lite/blob/main/CH
 agent-loop = "main:cli_entry"
 
 [tool.setuptools]
-py-modules = ["main", "loop", "llm_client", "tools", "memory", "vfs"]
+py-modules = ["main", "loop", "llm_client", "tools", "memory", "vfs", "search", "world_model"]
+packages = ["improve"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
