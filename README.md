@@ -49,7 +49,7 @@ We keep those two documents separate on purpose.
   <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
 </p>
 
-<p align="center"><sub>CI last redrew this README 2026-08-30 12:56 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 7 open issues/PRs, 2 listed contributors (<code>cursoragent</code>, <code>jeremy-jaeger</code>). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
+<p align="center"><sub>CI last redrew this README 2026-08-31 15:09 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 7 open issues/PRs, 2 listed contributors (<code>cursoragent</code>, <code>jeremy-jaeger</code>). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
 <!-- pulse:end -->
 
 <p align="center">
