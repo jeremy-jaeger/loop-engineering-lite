@@ -3,7 +3,11 @@ import urllib.request
 import urllib.error
 from memory import load_knowledge
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
+DEFAULT_LLM_API_BASE = "http://localhost:11434"
+
+
+def chat_url(llm_api_base=DEFAULT_LLM_API_BASE):
+    return llm_api_base.rstrip("/") + "/api/chat"
 
 # The expanded JSON Schema
 RESPONSE_SCHEMA = {
@@ -32,7 +36,7 @@ RESPONSE_SCHEMA = {
     "required": ["thought_process", "status"]
 }
 
-def call_ollama(messages, model="qwen3.5:0.8b"):
+def call_ollama(messages, model="qwen3.5:0.8b", llm_api_base=DEFAULT_LLM_API_BASE):
     
     # Load past learnings dynamically
     past_learnings = load_knowledge()
@@ -71,7 +75,7 @@ def call_ollama(messages, model="qwen3.5:0.8b"):
     }
 
     req = urllib.request.Request(
-        OLLAMA_URL, 
+        chat_url(llm_api_base),
         data=json.dumps(payload).encode('utf-8'),
         headers={'Content-Type': 'application/json'}
     )

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "loop-engineering-lite"
 version = "0.1.0"
-description = "Local agent harness: sandboxed VFS world model, verified commits, trajectory export."
+description = "Verify agents before they touch your disk — local VFS sandbox, Ollama, TDD commits."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
@@ -14,10 +14,12 @@ authors = [
 ]
 keywords = [
   "agents",
-  "ollama",
   "local-llm",
-  "vfs",
+  "ollama",
+  "sandbox",
   "tdd",
+  "world-model",
+  "vfs",
   "self-improvement",
 ]
 classifiers = [
@@ -37,6 +39,7 @@ dev = ["pytest>=7.0"]
 
 [project.urls]
 Homepage = "https://github.com/jeremy-jaeger/loop-engineering-lite"
+Documentation = "https://github.com/jeremy-jaeger/loop-engineering-lite/blob/main/docs/getting-started.md"
 Issues = "https://github.com/jeremy-jaeger/loop-engineering-lite/issues"
 Changelog = "https://github.com/jeremy-jaeger/loop-engineering-lite/blob/main/CHANGELOG.md"
 

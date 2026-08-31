@@ -1,18 +1,41 @@
 # Self-improvement (what actually happens)
 
-After a task is marked complete, `loop.py` does three things in order:
+## How it works
 
-1. **`vfs.commit_to_reality()`** — dump the in-memory file map onto disk.
-2. **`export_trajectory_jsonl(messages)`** — append ShareGPT-style
-   `{ "messages": [...] }` to `dataset.jsonl`.
-3. **`reflect_on_trace(...)`** — a second Ollama call that may append a
-   `{ "task", "lesson" }` object to `knowledge.json`.
+1. **After a successful run**, the loop saves the message trace to `dataset.jsonl`.
+2. **Extraction**: a small Ollama model distills the trajectory into one generalized heuristic (or `NO_NEW_RULE`).
+3. **Injection**: that rule is appended to `knowledge.json` and prepended to future system prompts as `CRITICAL PAST LEARNINGS`.
+4. **Export**: batch verified traces with `scripts/generate_dataset.sh` when you want LoRA / SFT data.
 
-The next `call_ollama` prepends those lessons as `CRITICAL PAST LEARNINGS`.
+```text
+run succeeds
+   → commit_to_reality()
+   → export_trajectory_jsonl(messages)   # dataset.jsonl
+   → reflect_on_trace(...)               # may append knowledge.json
+next run
+   → load_knowledge() prepended into call_ollama system prompt
+```
 
 That is **experience replay into the prompt**, plus a dataset you can feed to
 LoRA later. It is not weight self-modification, and it will bloat the system
-prompt until someone adds retrieval.
+prompt until someone adds retrieval ([ROADMAP](ROADMAP.md)).
+
+## Example `knowledge.json`
+
+```json
+[
+  {
+    "task": "Use TDD to write is_palindrome(s)…",
+    "lesson": "Always run tests before marking complete"
+  },
+  {
+    "task": "Refactor validator into its own module…",
+    "lesson": "If pytest fails, read the error line number before editing again"
+  }
+]
+```
+
+Edit or delete the file anytime; an empty or missing file is valid.
 
 ## Fine-tune path (manual, not automated here)
 
@@ -24,9 +47,3 @@ ADR-005 sketches:
 
 `scripts/generate_dataset.sh` is the data flywheel for step 1. Training code
 is deliberately not vendored so this repo stays stdlib-small.
-
-## `knowledge.json`
-
-Seeded examples in the repo show the intended shape: a task string and a
-short generalized rule. Edit or delete the file anytime; an empty or missing
-file is valid.
