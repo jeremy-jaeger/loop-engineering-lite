@@ -7,6 +7,8 @@ The objective is a runtime any model or framework can plug into — turning
 inference trajectories into continuous, **verifiable** capability growth.
 
 This file is the ambition. [architecture.md](architecture.md) is what ships today.
+Near-term checkboxes live in [ROADMAP.md](ROADMAP.md); positioning vs other
+projects is in [COMPARISONS.md](COMPARISONS.md).
 
 ---
 

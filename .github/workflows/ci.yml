@@ -22,5 +22,22 @@ jobs:
         run: python -m pytest -q
       - name: Offline VFS demo
         run: python examples/offline_vfs_demo.py
+      - name: Benchmark dry-run
+        run: python examples/benchmarks.py --dry-run
+      - name: CLI help
+        run: agent-loop --help
       - name: Compile
         run: python -m compileall -q .
+      - name: Coverage (3.12 only)
+        if: matrix.python-version == '3.12'
+        run: |
+          pip install coverage
+          coverage run -m pytest -q
+          coverage report -m
+          coverage xml
+      - name: Upload coverage artifact
+        if: matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml

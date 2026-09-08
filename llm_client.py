@@ -5,7 +5,11 @@ import urllib.error
 from memory import load_knowledge
 from improve import config
 
-OLLAMA_URL = "http://localhost:11434/api/chat"
+DEFAULT_LLM_API_BASE = "http://localhost:11434"
+
+
+def chat_url(llm_api_base=DEFAULT_LLM_API_BASE):
+    return llm_api_base.rstrip("/") + "/api/chat"
 
 # The expanded JSON Schema
 RESPONSE_SCHEMA = {
@@ -36,7 +40,7 @@ RESPONSE_SCHEMA = {
 
 def resolve_ollama_model(default=None):
     """Prefer a promoted adapter tag when the eval gate has written adapters/current.json."""
-    default = default or getattr(config, "DEFAULT_OLLAMA_MODEL", None) or config.DEFAULT_OLLAMA_MODEL
+    default = default or getattr(config, "DEFAULT_OLLAMA_MODEL", None) or "qwen3.5:0.8b"
     path = getattr(config, "CURRENT_ADAPTER", None) or config.CURRENT_ADAPTER
     if os.path.exists(path):
         try:
@@ -48,12 +52,12 @@ def resolve_ollama_model(default=None):
             pass
     return default
 
-def call_ollama(messages, model=None):
+def call_ollama(messages, model=None, llm_api_base=DEFAULT_LLM_API_BASE):
     model = model or resolve_ollama_model()
-    
+
     # Load past learnings dynamically
     past_learnings = load_knowledge()
-    
+
     system_prompt = {
         "role": "system",
         "content": (
@@ -74,21 +78,21 @@ def call_ollama(messages, model=None):
             f"{past_learnings}"
         )
     }
-    
+
     full_messages = [system_prompt] + messages
 
     payload = {
         "model": model,
         "messages": full_messages,
         "stream": False,
-        "format": RESPONSE_SCHEMA, 
+        "format": RESPONSE_SCHEMA,
         "options": {
-            "temperature": 0.0 
+            "temperature": 0.0
         }
     }
 
     req = urllib.request.Request(
-        OLLAMA_URL, 
+        chat_url(llm_api_base),
         data=json.dumps(payload).encode('utf-8'),
         headers={'Content-Type': 'application/json'}
     )
@@ -98,11 +102,7 @@ def call_ollama(messages, model=None):
             result = json.loads(response.read().decode('utf-8'))
             message_content = result.get('message', {}).get('content', '{}')
             return json.loads(message_content)
-            
+
     except Exception as e:
         print(f"\n[ERROR] Inference failed: {e}")
         return {"status": "complete", "final_answer": "Execution failed."}
-
-
-call_ollama = call_ollama
-call_ollama = call_ollama

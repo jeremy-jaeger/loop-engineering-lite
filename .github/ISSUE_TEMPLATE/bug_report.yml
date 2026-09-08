@@ -6,29 +6,41 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for the report. Include a prompt and the iteration log if you can — this project lives and dies on traces.
+        Thanks for the report. Include a prompt, model, and the iteration log if you can — this project lives and dies on traces.
   - type: textarea
-    id: what
+    id: prompt
     attributes:
-      label: What happened
-      placeholder: Expected vs actual.
+      label: Prompt
+      description: Exact agent-loop / main.py invocation.
+      placeholder: agent-loop "Use TDD to write is_palindrome(s)…"
     validations:
       required: true
   - type: textarea
-    id: repro
+    id: what
     attributes:
-      label: Reproduction
-      description: Exact command, model tag, OS, Python version.
-      placeholder: python3 main.py "..."
+      label: Expected vs actual
+      placeholder: Expected … / Actual …
     validations:
       required: true
   - type: input
     id: model
     attributes:
-      label: Ollama model
+      label: Model
+      description: Output of `ollama list` (or the --model tag you used).
       placeholder: qwen3.5:0.8b
+    validations:
+      required: true
   - type: textarea
     id: log
     attributes:
-      label: Relevant log excerpt
+      label: Full log excerpt
+      description: Paste the iteration log, including [ERROR] / [SIMULATION …] lines.
       render: text
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python version, install method (`pip install -e .` vs raw main.py).
+      placeholder: macOS 15 / Python 3.12 / pip install -e .

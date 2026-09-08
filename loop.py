@@ -1,4 +1,6 @@
 import json
+from functools import partial
+
 from llm_client import call_ollama
 from tools import execute_tool
 from memory import reflect_on_trace, export_trajectory_jsonl
@@ -47,7 +49,15 @@ def _export_rejected(messages, task, vfs):
         verified_command=last["command"] if last else None,
     )
 
-def _finish_verified(messages, initial_prompt, vfs, final_ans, enable_reflection):
+def _finish_verified(
+    messages,
+    initial_prompt,
+    vfs,
+    final_ans,
+    enable_reflection,
+    model=None,
+    llm_api_base="http://localhost:11434",
+):
     committed = vfs.commit_to_reality()
     if not committed:
         return None
@@ -58,13 +68,20 @@ def _finish_verified(messages, initial_prompt, vfs, final_ans, enable_reflection
         verified_command=vfs.verified_command(),
     )
     if enable_reflection:
-        reflect_on_trace(messages, initial_prompt, model="qwen3.5:0.8b")
+        reflect_on_trace(
+            messages,
+            initial_prompt,
+            model=model or "qwen3.5:0.8b",
+            llm_api_base=llm_api_base,
+        )
     return final_ans
 
 def run_agent_loop(
     initial_prompt,
     max_iterations=10,
     max_memory_items=8,
+    model=None,
+    llm_api_base="http://localhost:11434",
     workspace=".",
     call_model=None,
     enable_reflection=True,
@@ -72,7 +89,8 @@ def run_agent_loop(
     verify_command=None,
 ):
     print(f"\n[START] Agent initialized with prompt:\n> {initial_prompt}\n")
-    call_model = call_model or call_ollama
+    if call_model is None:
+        call_model = partial(call_ollama, model=model, llm_api_base=llm_api_base)
 
     # --- 1. INITIALIZE WORLD MODEL ---
     vfs = VirtualFileSystem(base_dir=workspace)
@@ -119,7 +137,15 @@ def run_agent_loop(
                     continue
 
             print(f"[SUCCESS - TASK COMPLETE]\nFinal Answer: {final_ans}\n")
-            finished = _finish_verified(messages, initial_prompt, vfs, final_ans, enable_reflection)
+            finished = _finish_verified(
+                messages,
+                initial_prompt,
+                vfs,
+                final_ans,
+                enable_reflection,
+                model=model,
+                llm_api_base=llm_api_base,
+            )
             if finished is not None:
                 return finished
             messages.append({"role": "user", "content": UNVERIFIED_COMPLETE_MSG})
@@ -171,5 +197,3 @@ def run_agent_loop(
     print("\n[ABORT] Maximum iterations reached without verified task completion.")
     _export_rejected(messages, initial_prompt, vfs)
     return None
-
-
