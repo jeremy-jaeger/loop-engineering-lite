@@ -8,6 +8,27 @@ authors:
     email: 207845088+jeremy-jaeger@users.noreply.github.com
 repository-code: https://github.com/jeremy-jaeger/loop-engineering-lite
 license: MIT
+keywords:
+  - runtime
+  - inference-engine
+  - inference
+  - continual-learning
+  - lifelong-learning
+  - online-learning
+  - model-evaluation
+  - verification
+  - audit
+  - framework-agnostic
+  - model-runtime
+  - trajectory-analysis
+  - ai-research
+  - ml
+  - python
+  - mlops
+  - open-source
+  - library
+  - instrumentation
+  - reproducibility
 version: 0.1.0
 date-released: "2026-08-24"
 abstract: >
