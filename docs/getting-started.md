@@ -26,8 +26,9 @@ python3 -m pip install -e ".[dev]"
 
 ## First run (safe)
 
-`commit_to_reality` writes every file in the VFS back into the process working
-directory. Do not discover that the hard way on this repo.
+`commit_to_reality` writes **agent-touched** files into the process working
+directory, and only after a passing pytest/unittest. Do not run the live loop
+against this repo’s working tree.
 
 ```bash
 mkdir -p /tmp/lel-demo && cd /tmp/lel-demo

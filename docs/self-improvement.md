@@ -1,10 +1,11 @@
 # Self-improvement (what actually happens)
 
-After a task is marked complete, `loop.py` does three things in order:
+After a task is **verified complete** (last command is a passing pytest/unittest),
+`loop.py` does three things in order:
 
-1. **`vfs.commit_to_reality()`** — dump the in-memory file map onto disk.
-2. **`export_trajectory_jsonl(messages)`** — append ShareGPT-style
-   `{ "messages": [...] }` to `dataset.jsonl`.
+1. **`vfs.commit_to_reality()`** — write agent-touched paths to disk (blocked if unverified).
+2. **`export_trajectory_jsonl(...)`** — append `{messages, reward, task, verified_command}`
+   to `dataset.jsonl` (`reward=1.0`). Failures go to `data/rejected.jsonl`.
 3. **`reflect_on_trace(...)`** — a second Ollama call that may append a
    `{ "task", "lesson" }` object to `knowledge.json`.
 
@@ -22,8 +23,15 @@ ADR-005 sketches:
 2. Train LoRA (for example with `mlx-lm` on Apple silicon).
 3. Fuse / GGUF and point Ollama at the new tag.
 
-`scripts/generate_dataset.sh` is the data flywheel for step 1. Training code
-is deliberately not vendored so this repo stays stdlib-small.
+`scripts/generate_dataset.sh` is the data flywheel for step 1. Then:
+
+```bash
+python3 -m improve prepare --chosen dataset.jsonl --rejected data/rejected.jsonl
+python3 -m improve train && python3 -m improve eval && python3 -m improve promote
+```
+
+MLX LoRA runs on Apple Silicon. Elsewhere `train` writes `adapters/train_spec.json`
+and does not pretend weights moved.
 
 ## `knowledge.json`
 

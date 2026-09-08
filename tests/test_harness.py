@@ -51,7 +51,13 @@ class VfsTests(unittest.TestCase):
 
     def test_commit_writes_host(self):
         self.vfs.write_file("out/a.txt", "committed")
-        self.vfs.commit_to_reality()
+        self.vfs.write_file(
+            "test_ok.py",
+            "import unittest\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertTrue(True)\n",
+        )
+        score, _ = self.vfs.simulate_command("python3 -m unittest test_ok.py")
+        self.assertEqual(score, 1.0)
+        self.assertTrue(self.vfs.commit_to_reality())
         path = os.path.join(self.td.name, "out", "a.txt")
         with open(path, encoding="utf-8") as f:
             self.assertEqual(f.read(), "committed")

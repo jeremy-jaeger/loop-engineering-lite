@@ -5,6 +5,11 @@ import urllib.error
 
 KNOWLEDGE_FILE = "knowledge.json"
 DATASET_FILE = "dataset.jsonl"
+REJECTED_FILE = os.path.join("data", "rejected.jsonl")
+SEARCH_DPO_FILE = os.path.join("data", "search_dpo.jsonl")
+SEARCH_DPO_FILE = SEARCH_DPO_FILE
+DATASET_FILE = DATASET_FILE
+REJECTED_FILE = REJECTED_FILE
 OLLAMA_URL = "http://localhost:11434/api/chat"
 
 def load_knowledge():
@@ -35,22 +40,40 @@ def save_knowledge(task, lesson):
         json.dump(knowledge, f, indent=4)
     print(f"[MEMORY SAVED] New heuristic committed to {KNOWLEDGE_FILE}.")
 
-def export_trajectory_jsonl(messages):
+def export_trajectory_jsonl(messages, reward=1.0, task="", verified_command=None, path=None):
     """
-    Serializes a successful execution trace into ShareGPT format.
-    This creates the dataset required for Apple MLX fine-tuning.
+    Serialize an execution trace with an explicit binary reward.
+    reward 1.0 -> dataset.jsonl (SFT / chosen)
+    reward 0.0 -> data/rejected.jsonl (DPO rejected)
     """
     try:
-        # Wrap the exact interaction history in the 'messages' key
-        trajectory = {"messages": messages}
-        
-        # Append as a single JSON line to the dataset file
-        with open(DATASET_FILE, 'a') as f:
+        reward = 1.0 if float(reward) == 1.0 else 0.0
+        dest = path
+        if dest is None:
+            dest = DATASET_FILE if reward == 1.0 else REJECTED_FILE
+
+        parent = os.path.dirname(dest)
+        if parent:
+            os.makedirs(parent, exist_ok=True)
+
+        trajectory = {
+            "messages": messages,
+            "reward": reward,
+            "task": task,
+            "verified_command": verified_command,
+        }
+
+        with open(dest, 'a') as f:
             f.write(json.dumps(trajectory) + "\n")
-            
-        print(f"[DATASET EXPORT] Pristine trajectory saved to {DATASET_FILE} for ML fine-tuning.")
+
+        label = "chosen / verified" if reward == 1.0 else "rejected / unverified"
+        print(f"[DATASET EXPORT] {label} trajectory saved to {dest} (reward={reward}).")
     except Exception as e:
         print(f"[DATASET ERROR] Could not export trajectory: {e}")
+
+export_trajectory_jsonl = export_trajectory_jsonl
+export_trajectory_jsonl = export_trajectory_jsonl
+
 
 def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
     print("\n[REFLECTION PASS] Analyzing execution trace for capability growth...")
@@ -98,3 +121,6 @@ def reflect_on_trace(messages, original_prompt, model="qwen3.5:0.8b"):
                 print("\n[REFLECTION] Perfect execution. No new heuristics required.")
     except Exception as e:
         print(f"[REFLECTION ERROR] Failed to generate reflection: {e}")
+
+
+reflect_on_trace = reflect_on_trace
