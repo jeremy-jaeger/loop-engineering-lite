@@ -33,6 +33,12 @@ def build_parser():
         default="http://localhost:11434",
         help="LLM HTTP origin (default: http://localhost:11434). Client POSTs to {base}/api/chat",
     )
+    parser.add_argument(
+        "--search-width",
+        type=int,
+        default=1,
+        help="Best-of-N candidate width over VFS forks (default: 1 = disabled)",
+    )
     return parser
 
 
@@ -42,6 +48,8 @@ def cli_entry(argv=None):
 
     if args.max_iters < 1:
         parser.error("--max-iters must be >= 1")
+    if args.search_width < 1:
+        parser.error("--search-width must be >= 1")
 
     print("=== Starting Lightweight Local Agent ===")
     final_result = run_agent_loop(
@@ -49,6 +57,7 @@ def cli_entry(argv=None):
         max_iterations=args.max_iters,
         model=args.model,
         llm_api_base=args.llm_api_base,
+        search_width=args.search_width,
     )
 
     print("\n=== Execution Complete ===")

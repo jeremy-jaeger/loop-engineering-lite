@@ -57,6 +57,24 @@ on hallucinations.
 
 That is the product. The [north star](docs/NORTH_STAR.md) is larger — we keep those separate on purpose.
 
+
+## Loop contract on this branch
+
+These are runtime facts, not roadmap:
+
+- **`complete` without a passing pytest/unittest does not commit.** The old `len(messages) > 3` shortcut is gone (ADR-006).
+- **`search_width>1` forks the VFS**, scores candidate tool calls with the test command, and adopts the winner (ADR-007). `fork()` never writes the host.
+- **Weight flywheel:** `python3 -m improve prepare|train|eval|promote` trains only on `reward==1.0` traces. Without MLX it writes `adapters/train_spec.json` instead of pretending weights moved.
+
+```bash
+python3 main.py "Use TDD to write clamp(x, lo, hi) with tests."
+python3 -c "from loop import run_agent_loop; run_agent_loop('...', search_width=3, verify_command='python3 -m pytest -q')"
+./scripts/generate_dataset.sh
+python3 -m improve prepare --chosen dataset.jsonl --rejected data/rejected.jsonl
+python3 -m pytest -q
+```
+
+
 ## See it
 
 <!-- pulse:start -->
@@ -64,7 +82,7 @@ That is the product. The [north star](docs/NORTH_STAR.md) is larger — we keep 
   <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
 </p>
 
-<p align="center"><sub>CI last redrew this README 2026-08-24 07:43 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 2 open issues/PRs, 1 listed contributors (<code>jeremy-jaeger</code>). History just started — this is sample zero of the sparkline. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
+<p align="center"><sub>CI last redrew this README 2026-09-08 12:10 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 7 open issues/PRs, 2 listed contributors (<code>cursoragent</code>, <code>jeremy-jaeger</code>). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
 <!-- pulse:end -->
 
 <p align="center">
@@ -90,8 +108,8 @@ python3 examples/offline_vfs_demo.py
 
 ## First Run (Safe)
 
-> **This writes files to your working directory** on a successful commit.
-> Always start in a throwaway folder.
+> **This writes agent-touched files to your working directory** on a successful
+> verified commit. Always start in a throwaway folder.
 
 ```bash
 mkdir -p /tmp/lel-demo && cd /tmp/lel-demo
@@ -113,6 +131,7 @@ CLI flags:
 agent-loop --help
 agent-loop --model qwen2:0.5b --max-iters 15 "…"
 agent-loop --llm-api-base http://localhost:11434 "…"
+agent-loop --search-width 3 "…"
 ```
 
 Full walkthrough: **[docs/getting-started.md](docs/getting-started.md)**.
@@ -202,10 +221,15 @@ loop.py            iterations, memory slide, interventions
 llm_client.py      Ollama chat + schema + learned rules
 tools.py           list / read / write / replace / run
 vfs.py             world model (dict → tempdir → maybe disk)
-memory.py          knowledge.json + dataset.jsonl
-docs/              getting started, architecture, roadmap, comparisons
-examples/          prompts, offline demo, benchmarks
-tests/             stdlib / pytest — no model required
+memory.py          knowledge.json + dataset.jsonl (+ rejected / search DPO)
+knowledge.json     surviving lessons from past runs
+docs/              getting started, architecture, roadmap, comparisons, ADRs
+examples/          prompts, offline demo, benchmarks, prior TDD artifacts
+scripts/           dataset batch + live pulse graphic
+improve/           prepare / train / eval / promote flywheel
+search.py          Best-of-N over VFS forks
+world_model.py     fork / rollout / value API
+tests/             stdlib / pytest + ADR regression tests — no model required
 ```
 
 ## Tools the model may call
@@ -229,8 +253,10 @@ tests/             stdlib / pytest — no model required
 ## Status
 
 **v0.1.0 alpha.** Loop, VFS, tools, truncation, reflection, and export are
-real and unit-tested. Live quality depends on the local model. See
-[ROADMAP.md](docs/ROADMAP.md) for what is next vs not planned.
+real and unit-tested. Adapter training (`improve/`) and verifier-guided search
+(`search_width`) ship on this branch. Live quality depends on the local model.
+See [ROADMAP.md](docs/ROADMAP.md) / [NORTH_STAR.md](docs/NORTH_STAR.md) for what
+is next vs not planned.
 
 ## Contributing
 

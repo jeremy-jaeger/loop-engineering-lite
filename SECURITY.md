@@ -7,9 +7,9 @@ This project is pre-1.0. Security fixes land on `main` only.
 ## What this software does
 
 The agent can **write files** and **run shell commands** inside a temporary
-sandbox, then **copy the sandbox state onto the host** when a task is marked
-complete (`VirtualFileSystem.commit_to_reality`). Treat every live run as
-untrusted code execution.
+sandbox, then **copy agent-touched sandbox paths onto the host** when a task
+is **verification-gated complete** (`VirtualFileSystem.commit_to_reality`).
+Treat every live run as untrusted code execution.
 
 ## Isolation model (honest)
 
@@ -18,8 +18,8 @@ This is **tempdir + commit**, not a container, VM, or seccomp jail.
 | What the VFS protects against | What it does **not** protect against |
 | --- | --- |
 | Filesystem mutation while the model is still failing tests | Prompt injection that tricks the agent into bad tools |
-| Committing broken edits without a successful `run_command` score | Code injection / malware in model-generated scripts |
-| Accidental clobber of host files mid-iteration | Escaping the tempdir via `shell=True` (absolute paths, `cd`, network, etc.) |
+| Committing broken edits without a passing pytest/unittest verify | Code injection / malware in model-generated scripts |
+| Accidental clobber of host files mid-iteration (sandbox only) | Escaping the tempdir via `shell=True` (absolute paths, `cd`, network, etc.) |
 | Shipping hallucinations as “done” without a verify signal | Running an untrusted model on a machine you care about |
 
 A capable or malicious model prompt can leave the tempdir. Path handling is

@@ -54,7 +54,13 @@ class VfsTests(unittest.TestCase):
 
     def test_commit_writes_host(self):
         self.vfs.write_file("out/a.txt", "committed")
-        self.vfs.commit_to_reality()
+        self.vfs.write_file(
+            "test_ok.py",
+            "import unittest\nclass T(unittest.TestCase):\n    def test_ok(self):\n        self.assertTrue(True)\n",
+        )
+        score, _ = self.vfs.simulate_command("python3 -m unittest test_ok.py")
+        self.assertEqual(score, 1.0)
+        self.assertTrue(self.vfs.commit_to_reality())
         path = os.path.join(self.td.name, "out", "a.txt")
         with open(path, encoding="utf-8") as f:
             self.assertEqual(f.read(), "committed")
@@ -138,17 +144,38 @@ class CliTests(unittest.TestCase):
 
     def test_parser_flags(self):
         args = main_mod.build_parser().parse_args(
-            ["--model", "qwen2:0.5b", "--max-iters", "3", "--llm-api-base", "http://127.0.0.1:1234", "task"]
+            [
+                "--model",
+                "qwen2:0.5b",
+                "--max-iters",
+                "3",
+                "--llm-api-base",
+                "http://127.0.0.1:1234",
+                "--search-width",
+                "2",
+                "task",
+            ]
         )
         self.assertEqual(args.model, "qwen2:0.5b")
         self.assertEqual(args.max_iters, 3)
         self.assertEqual(args.llm_api_base, "http://127.0.0.1:1234")
+        self.assertEqual(args.search_width, 2)
         self.assertEqual(args.prompt, "task")
 
     def test_cli_entry_forwards_kwargs(self):
         with mock.patch("main.run_agent_loop", return_value="ok") as mocked:
             code = main_mod.cli_entry(
-                ["--model", "m", "--max-iters", "2", "--llm-api-base", "http://h", "hello"]
+                [
+                    "--model",
+                    "m",
+                    "--max-iters",
+                    "2",
+                    "--llm-api-base",
+                    "http://h",
+                    "--search-width",
+                    "3",
+                    "hello",
+                ]
             )
         self.assertEqual(code, 0)
         mocked.assert_called_once_with(
@@ -156,6 +183,7 @@ class CliTests(unittest.TestCase):
             max_iterations=2,
             model="m",
             llm_api_base="http://h",
+            search_width=3,
         )
 
     def test_cli_rejects_bad_max_iters(self):

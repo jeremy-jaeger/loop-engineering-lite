@@ -28,8 +28,9 @@ python3 examples/offline_vfs_demo.py
 
 ## First run (safe)
 
-> **Warning:** `commit_to_reality` writes every file in the VFS into the
-> process working directory. Start in a throwaway folder.
+> **Warning:** on success, `commit_to_reality` writes **agent-touched** files
+> into the process working directory — and only after a passing pytest/unittest.
+> Start in a throwaway folder; do not run the live loop against this repo’s tree.
 
 ```bash
 mkdir -p /tmp/lel-demo && cd /tmp/lel-demo
@@ -52,9 +53,11 @@ from pytest, then either a commit + optional reflection, or an abort at
 ```bash
 agent-loop --model qwen2:0.5b --max-iters 15 "…"
 agent-loop --llm-api-base http://localhost:11434 "…"
+agent-loop --search-width 3 "…"
 ```
 
 `--llm-api-base` defaults to Ollama’s origin. The client calls `{base}/api/chat`.
+`--search-width > 1` turns on ADR-007 Best-of-N over VFS forks.
 
 ## Multi-file tasks
 

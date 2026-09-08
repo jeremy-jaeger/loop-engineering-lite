@@ -9,7 +9,7 @@ and this project uses [Semantic Versioning](https://semver.org/).
 
 ### Added
 
-- CLI via `argparse`: `--model`, `--max-iters`, `--llm-api-base`
+- CLI via `argparse`: `--model`, `--max-iters`, `--llm-api-base`, `--search-width`
 - README rewrite: verify-before-commit headline, before/after table, Why Loop, examples gallery
 - `docs/ROADMAP.md`, `docs/COMPARISONS.md`; stronger `SECURITY.md` isolation table
 - `examples/benchmarks.py` (live scorecard + `--dry-run`)
@@ -25,7 +25,9 @@ and this project uses [Semantic Versioning](https://semver.org/).
 ### Added
 
 - Local ReAct-style loop over Ollama with a strict JSON response schema
-- Virtual file system sandbox: simulate edits and commands, commit only after success
+- Virtual file system sandbox: simulate edits and commands; commit only after a passing pytest/unittest (ADR-006)
+- Test-time Best-of-N over VFS forks (`search_width`, ADR-007)
+- Adapter flywheel `python3 -m improve prepare|train|eval|promote` (ADR-005)
 - Tool adapters: `list_files`, `read_file`, `write_file`, `search_and_replace`, `run_command`
 - Sliding-window memory and observation truncation for small-context models
 - Reflection pass that appends heuristics to `knowledge.json`
@@ -37,6 +39,6 @@ and this project uses [Semantic Versioning](https://semver.org/).
 ### Known limits
 
 - Live inference requires a local Ollama daemon (or compatible `--llm-api-base`)
-- `commit_to_reality` writes the full VFS snapshot back to the working directory
-- Fine-tuning (MLX / LoRA) is a documented pipeline, not a bundled trainer
+- `commit_to_reality` writes only agent-touched paths, and only after verification
+- Fine-tuning runs on Apple Silicon via MLX; elsewhere `improve train` writes a plan file instead of fake weights
 - Tempdir isolation is not a container — see SECURITY.md

@@ -6,13 +6,12 @@ This file is the near-term checklist — not the [north star](NORTH_STAR.md).
 ## Next
 
 - [ ] Multi-directory VFS UX (keys already support nested paths; `list_files` is still flat)
-- [ ] Stronger verification signals (coverage thresholds, optional type checking)
+- [ ] Stronger verification signals beyond pytest/unittest (coverage thresholds, optional type checking)
 - [ ] OpenAI-compatible chat adapters beyond Ollama’s `/api/chat` shape
 - [ ] Retrieval over `knowledge.json` before the prompt bloats
 
 ## Later
 
-- [ ] Fine-tuning harness helpers (adapter export docs + scripts; trainer stays external)
 - [ ] Swarm mode (spawn N agents, score, merge)
 - [ ] Benchmark leaderboard format for local model scorecards
 - [ ] Trace replay viewer (optional local dashboard over `dataset.jsonl`)
@@ -26,8 +25,10 @@ This file is the near-term checklist — not the [north star](NORTH_STAR.md).
 
 ## Already available
 
-- VFS sandbox + verified commit
-- Ollama JSON schema loop + `--model` / `--llm-api-base` CLI flags
-- Heuristic reflection → `knowledge.json` + JSONL export
-- Offline unit tests and `examples/offline_vfs_demo.py`
+- VFS sandbox + **verification-gated** commit (ADR-006)
+- Verifier-guided Best-of-N over VFS forks (`search_width`, ADR-007)
+- Adapter flywheel `python3 -m improve prepare|train|eval|promote` (ADR-005; MLX on Apple Silicon)
+- Ollama JSON schema loop + `--model` / `--max-iters` / `--llm-api-base` CLI flags
+- Heuristic reflection → `knowledge.json` + rewarded JSONL export
+- Offline unit tests, ADR regression tests, and `examples/offline_vfs_demo.py`
 - CI on Python 3.9 / 3.11 / 3.12
