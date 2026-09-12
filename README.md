@@ -82,7 +82,7 @@ python3 -m pytest -q
   <a href="docs/pulse.md"><img src="docs/assets/pulse.svg" alt="Live repository pulse redrawn by CI from GitHub stars, forks, and contributors" width="920"></a>
 </p>
 
-<p align="center"><sub>CI last redrew this README 2026-09-11 12:13 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 4 open issues/PRs, 2 listed contributors (<code>jeremy-jaeger</code>, <code>cursoragent</code>). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
+<p align="center"><sub>CI last redrew this README 2026-09-12 11:37 UTC. Live totals: 0 stars, 0 forks, 0 watchers, 4 open issues/PRs, 2 listed contributors (<code>jeremy-jaeger</code>, <code>cursoragent</code>). Star count is unchanged since the previous sample. The particle field and sparkline are generated from those numbers (<a href="scripts/generate_pulse.py">how</a>).</sub></p>
 <!-- pulse:end -->
 
 <p align="center">
