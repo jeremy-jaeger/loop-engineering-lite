@@ -181,13 +181,13 @@ Simple model scorecard → [examples/benchmarks.py](examples/benchmarks.py).
 
 ## Security model
 
-**Not a container.** Tempdir + commit. A malicious or jailbroken model prompt
-can still escape the tempdir via shell tricks.
+**Not a container.** Tempdir + commit. Shell syntax is rejected, and Python
+inside the tempdir can still read the host filesystem.
 
 | Protects against | Does **not** protect against |
 | --- | --- |
 | Accidental host mutation while the model is still failing | Prompt injection / code injection |
-| Shipping broken edits without a passing command | Escaping `shell=True` in the tempdir |
+| Shipping broken edits without a passing command | Python in the tempdir reading the host filesystem |
 | Overwriting good code with an unverified hallucination | Running untrusted models on a host you care about |
 
 **Recommended:** run untrusted models inside a VM or container. Details →

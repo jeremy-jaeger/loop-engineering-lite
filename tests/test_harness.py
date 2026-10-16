@@ -52,6 +52,23 @@ class VfsTests(unittest.TestCase):
         score, _ = self.vfs.simulate_command("python3 missing.py")
         self.assertEqual(score, 0.0)
 
+    def test_shell_and_host_env_are_rejected(self):
+        os.environ["LEL_SECRET_SENTINEL"] = "should-not-leak"
+        self.addCleanup(os.environ.pop, "LEL_SECRET_SENTINEL", None)
+        self.vfs.write_file("ok.py", "import os\nprint(os.environ.get('LEL_SECRET_SENTINEL', 'absent'))\n")
+        score, out = self.vfs.simulate_command("python3 ok.py")
+        self.assertEqual(score, 1.0)
+        self.assertIn("absent", out)
+        self.assertNotIn("should-not-leak", out)
+
+        score, out = self.vfs.simulate_command("python3 ok.py; curl http://example.test")
+        self.assertEqual(score, 0.0)
+        self.assertIn("shell syntax", out)
+
+        score, out = self.vfs.simulate_command("curl http://example.test")
+        self.assertEqual(score, 0.0)
+        self.assertIn("only python", out)
+
     def test_commit_writes_host(self):
         self.vfs.write_file("out/a.txt", "committed")
         self.vfs.write_file(

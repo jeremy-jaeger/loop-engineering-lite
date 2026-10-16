@@ -1,5 +1,7 @@
 import os
 import re
+import shlex
+import sys
 import tempfile
 import subprocess
 import shutil
@@ -15,6 +17,43 @@ def is_verification_command(command):
     if not command or not isinstance(command, str):
         return False
     return bool(VERIFICATION_COMMAND_RE.search(command))
+
+
+_SHELL_META = re.compile(r"[\n\r;&|<>`$(){}]")
+_ALLOWED_COMMANDS = {"python", "python3", "pytest"}
+
+
+def command_rejection_reason(command):
+    """Return why a command cannot run, or None when it is a plain interpreter argv."""
+    if not command or not isinstance(command, str):
+        return "command is empty"
+    if _SHELL_META.search(command):
+        return "shell syntax is not allowed"
+    try:
+        argv = shlex.split(command, posix=True)
+    except ValueError as exc:
+        return f"command could not be parsed: {exc}"
+    if not argv:
+        return "command is empty"
+    program = os.path.basename(argv[0])
+    if program not in _ALLOWED_COMMANDS or argv[0] != program:
+        return "only python, python3, and pytest commands are allowed"
+    return None
+
+
+def sandbox_env(temp_dir):
+    """Environment for a rollout. Host secrets are not forwarded."""
+    python_dir = os.path.dirname(sys.executable)
+    path = os.pathsep.join([python_dir, "/usr/bin", "/bin"])
+    return {
+        "PATH": path,
+        "HOME": temp_dir,
+        "TMPDIR": temp_dir,
+        "LANG": os.environ.get("LANG", "C.UTF-8"),
+        "LC_ALL": os.environ.get("LC_ALL", "C.UTF-8"),
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONNOUSERSITE": "1",
+    }
 
 
 is_verification_command = is_verification_command
@@ -123,10 +162,18 @@ class VirtualFileSystem:
         return None
 
     def simulate_command(self, command, timeout=10):
+        rejection = command_rejection_reason(command)
+        if rejection:
+            self.record_command(command, 0.0)
+            return 0.0, f"Simulation Error: {rejection}."
+
         temp_dir = tempfile.mkdtemp(prefix="agent_sim_")
         try:
             for rel_path, content in self.state.items():
-                full_path = os.path.join(temp_dir, rel_path)
+                safe_path = self._resolve_rel(rel_path)
+                if safe_path is None:
+                    continue
+                full_path = os.path.join(temp_dir, safe_path)
                 parent = os.path.dirname(full_path)
                 if parent:
                     os.makedirs(parent, exist_ok=True)
@@ -134,9 +181,10 @@ class VirtualFileSystem:
                     f.write(content)
 
             result = subprocess.run(
-                command,
-                shell=True,
+                shlex.split(command),
+                shell=False,
                 cwd=temp_dir,
+                env=sandbox_env(temp_dir),
                 capture_output=True,
                 text=True,
                 timeout=timeout
@@ -161,10 +209,11 @@ class VirtualFileSystem:
         print("\n[VFS COMMIT] Writing agent-touched files back to reality...")
         written = 0
         for rel_path in sorted(self.touched_paths):
-            content = self.state.get(rel_path)
-            if content is None:
+            safe_path = self._resolve_rel(rel_path)
+            content = self.state.get(safe_path) if safe_path is not None else None
+            if safe_path is None or content is None:
                 continue
-            full_path = os.path.join(self.base_dir, rel_path)
+            full_path = os.path.join(self.base_dir, safe_path)
             parent = os.path.dirname(full_path)
             if parent:
                 os.makedirs(parent, exist_ok=True)

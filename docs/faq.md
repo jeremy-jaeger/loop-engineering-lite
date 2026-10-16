@@ -25,8 +25,9 @@ Yes. VFS keys are path strings (`a.py`, `pkg/b.py`). Nested dirs are created on
 simulate/commit. `list_files` is still a flat listing.
 
 **Is the VFS secure?**  
-It is a tempdir + dictionary, not gVisor. `shell=True` is used. Do not point
-it at sensitive trees. See [SECURITY.md](../SECURITY.md).
+It is a tempdir + dictionary, not gVisor. Commands cannot use a shell, but
+Python in the tempdir can still touch the host. Do not point it at sensitive
+trees. See [SECURITY.md](../SECURITY.md).
 
 **Where are the fancy world models?**  
 They are not here. Read [NORTH_STAR.md](NORTH_STAR.md) and

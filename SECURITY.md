@@ -19,11 +19,13 @@ This is **tempdir + commit**, not a container, VM, or seccomp jail.
 | --- | --- |
 | Filesystem mutation while the model is still failing tests | Prompt injection that tricks the agent into bad tools |
 | Committing broken edits without a passing pytest/unittest verify | Code injection / malware in model-generated scripts |
-| Accidental clobber of host files mid-iteration (sandbox only) | Escaping the tempdir via `shell=True` (absolute paths, `cd`, network, etc.) |
+| Accidental clobber of host files mid-iteration (sandbox only) | Python code in the tempdir reading or writing the host filesystem |
 | Shipping hallucinations as “done” without a verify signal | Running an untrusted model on a machine you care about |
 
-A capable or malicious model prompt can leave the tempdir. Path handling is
-workspace-relative for VFS keys; the shell is not confined beyond `cwd=temp_dir`.
+Commands run without a shell. Only `python`, `python3`, and `pytest` are
+accepted, shell metacharacters are rejected, and the child process does not
+inherit host environment variables. Python code inside the tempdir can still
+read and write the host filesystem. This is not a container.
 
 ## Recommended mitigations
 
